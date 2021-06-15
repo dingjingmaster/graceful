@@ -1,4 +1,9 @@
+HEADERS += \
+    $$PWD/notifications_interface.h                         \
 
+
+SOURCES += \
+    $$PWD/notifications_interface.cpp                       \
 
 
 OTHER_FILES += \
@@ -6,5 +11,5 @@ OTHER_FILES += \
     $$PWD/org.graceful.SingleApplication.xml                \
 
 
-system(qdbusxml2cpp -m -p notifications_interface $$PWD/dbus/org.freedesktop.Notifications.xml)
+system(qdbusxml2cpp -m -p notifications_interface $$PWD/org.freedesktop.Notifications.xml)
 
