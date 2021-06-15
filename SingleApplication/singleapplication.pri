@@ -1,6 +1,3 @@
-QT += core network
-CONFIG += c++11
-
 HEADERS += \
     $$PWD/SingleApplication                     \
     $$PWD/singleapplication.h                   \

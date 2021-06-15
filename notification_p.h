@@ -1,0 +1,4 @@
+#ifndef NOTIFICATION_P_H
+#define NOTIFICATION_P_H
+
+#endif // NOTIFICATION_P_H
