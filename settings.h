@@ -60,9 +60,7 @@ class GRACEFUL_API GracefulTheme
 {
 public:
     GracefulTheme();
-
     GracefulTheme(const QString &path);
-
     GracefulTheme(const GracefulTheme &other);
 
     GracefulTheme& operator=(const GracefulTheme &other);
@@ -86,7 +84,7 @@ private:
     QSharedDataPointer<GracefulThemeData>   d;
 };
 
-#define GracefulTheme GracefulTheme::currentTheme()
+//#define GracefulTheme GracefulTheme::currentTheme()
 
 
 class GRACEFUL_API SettingsCache
@@ -125,7 +123,6 @@ private:
     GlobalSettingsPrivate* const d_ptr;
     Q_DECLARE_PRIVATE(GlobalSettings)
 };
-
 
 }
 
