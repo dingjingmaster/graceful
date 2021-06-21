@@ -12,5 +12,5 @@
 #define GRACEFUL_DATA_DIR                           "/usr/share"
 #define GRACEFUL_RELATIVE_SHARE_TRANSLATIONS_DIR    "graceful/translations"
 #define GRACEFUL_SHARE_TRANSLATIONS_DIR             "/usr/share/graceful/translations"
-
+#define GRACEFUL_GRAPHICS_DIR                       "/usr/share/lxqt/graphics"
 #endif // GLOBALS_H

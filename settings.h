@@ -8,6 +8,7 @@
 #include "globals.h"
 
 class QEvent;
+#define gracefulTheme GracefulTheme::currentTheme()
 
 namespace graceful
 {

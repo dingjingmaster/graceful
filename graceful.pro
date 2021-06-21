@@ -27,20 +27,23 @@ HEADERS += \
     $$PWD/translator.h                          \
     $$PWD/screensaver.h                         \
     $$PWD/notification.h                        \
-    $$PWD/notification_p.h
+    $$PWD/notification_p.h                      \
+    $$PWD/application.h
 
 
 SOURCES += \
     $$PWD/settings.cpp                          \
     $$PWD/translator.cpp                        \
     $$PWD/screensaver.cpp                       \
-    $$PWD/notification.cpp
+    $$PWD/notification.cpp \
+    $$PWD/application.cpp
 
 
 INSTALL_HEADERS.files = \
     $$PWD/globals.h                             \
     $$PWD/settings.h                            \
     $$PWD/translator.h                          \
+    $$PWD/application.h                         \
     $$PWD/screensaver.h                         \
     $$PWD/notification.h                        \
 
