@@ -14,7 +14,6 @@ graceful::GracefulTheme* graceful::GracefulTheme::gInstance = nullptr;
 
 using namespace graceful;
 
-
 class graceful::SettingsPrivate
 {
 public:

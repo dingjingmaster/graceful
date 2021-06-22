@@ -85,7 +85,7 @@ private:
     QSharedDataPointer<GracefulThemeData>   d;
 };
 
-//#define GracefulTheme GracefulTheme::currentTheme()
+#define gracefulTheme GracefulTheme::currentTheme()
 
 
 class GRACEFUL_API SettingsCache

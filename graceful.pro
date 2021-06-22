@@ -5,7 +5,7 @@ TARGET      = graceful
 QT          += core network widgets xml dbus x11extras KWindowSystem
 CONFIG      += no_keywords c++11 link_pkgconfig
 PKGCONFIG   += Qt5Xdg
-
+DEFINES     += COMPILE_LIBGRACEFUL
 
 INCLUDEPATH += $$PWD/
 
