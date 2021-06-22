@@ -58,6 +58,7 @@ INSTALL_PRIVATE_HEADERS.path = $$INSTALL_HEADER_DIR/private/
 
 INSTALLS += \
     target                                      \
+    POWER_LIB                                   \
     INSTALL_HEADERS                             \
     INSTALL_PRIVATE_HEADERS                     \
     SINGLE_LIB SINGLE_LIB_PRIV                  \
