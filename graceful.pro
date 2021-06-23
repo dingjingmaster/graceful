@@ -15,6 +15,7 @@ INSTALL_HEADER_DIR = /usr/include/graceful/
 
 include($$PWD/dbus/dbus.pri)
 include($$PWD/power/power.pri)
+include($$PWD/QHotkey/qhotkey.pri)
 include($$PWD/SingleApplication/singleapplication.pri)
 
 
@@ -40,6 +41,7 @@ SOURCES += \
 
 
 INSTALL_HEADERS.files = \
+    $$QHOTKEY_PUBLIC_HEADERS                    \
     $$PWD/globals.h                             \
     $$PWD/settings.h                            \
     $$PWD/translator.h                          \
