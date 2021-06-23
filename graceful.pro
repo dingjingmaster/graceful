@@ -13,6 +13,7 @@ INCLUDEPATH += $$PWD/
 INSTALL_HEADER_DIR = /usr/include/graceful/
 
 
+include($$PWD/Log/log.pri)
 include($$PWD/dbus/dbus.pri)
 include($$PWD/power/power.pri)
 include($$PWD/QHotkey/qhotkey.pri)
@@ -36,11 +37,12 @@ SOURCES += \
     $$PWD/settings.cpp                          \
     $$PWD/translator.cpp                        \
     $$PWD/screensaver.cpp                       \
-    $$PWD/notification.cpp \
+    $$PWD/notification.cpp                      \
     $$PWD/application.cpp
 
 
 INSTALL_HEADERS.files = \
+    $$LOG_HEADERS                               \
     $$QHOTKEY_PUBLIC_HEADERS                    \
     $$PWD/globals.h                             \
     $$PWD/settings.h                            \
