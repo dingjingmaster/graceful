@@ -13,7 +13,7 @@ INCLUDEPATH += $$PWD/
 INSTALL_HEADER_DIR = /usr/include/graceful/
 
 
-include($$PWD/Log/log.pri)
+include($$PWD/log/log.pri)
 include($$PWD/dbus/dbus.pri)
 include($$PWD/power/power.pri)
 include($$PWD/QHotkey/qhotkey.pri)
