@@ -1,7 +1,6 @@
 TEMPLATE    = lib
 TARGET      = graceful
 
-
 QT          += core network widgets xml dbus x11extras KWindowSystem
 CONFIG      += no_keywords c++11 link_pkgconfig
 PKGCONFIG   += Qt5Xdg
@@ -16,6 +15,7 @@ INSTALL_HEADER_DIR = /usr/include/graceful/
 include($$PWD/log/log.pri)
 include($$PWD/dbus/dbus.pri)
 include($$PWD/power/power.pri)
+include($$PWD/common/common.pri)
 include($$PWD/QHotkey/qhotkey.pri)
 include($$PWD/SingleApplication/singleapplication.pri)
 

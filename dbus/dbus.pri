@@ -11,5 +11,5 @@ OTHER_FILES += \
     $$PWD/org.graceful.SingleApplication.xml                \
 
 
-#system(qdbusxml2cpp -m -p notifications_interface $$PWD/org.freedesktop.Notifications.xml)
+system(qdbusxml2cpp -c OrgFreedesktopNotificationsInterface -p notifications_interface $$PWD/org.freedesktop.Notifications.xml)
 
