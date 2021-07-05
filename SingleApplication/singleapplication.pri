@@ -1,3 +1,5 @@
+DEFINES += DQAPPLICATION_CLASS='QApplication'
+
 HEADERS += \
     $$PWD/SingleApplication                     \
     $$PWD/singleapplication.h                   \

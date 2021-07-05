@@ -1,12 +1,14 @@
-TEMPLATE    = lib
-TARGET      = graceful
+TEMPLATE        = lib
+TARGET          = graceful
 
-QT          += core network widgets xml dbus x11extras KWindowSystem
-CONFIG      += no_keywords c++11 link_pkgconfig
-PKGCONFIG   += Qt5Xdg
-DEFINES     += COMPILE_LIBGRACEFUL
+QT              += core network widgets xml dbus x11extras KWindowSystem
+PKGCONFIG       += Qt5Xdg
+DEFINES         += COMPILE_LIBGRACEFUL
+CONFIG          += no_keywords c++11 link_pkgconfig hide_symbols
+LIBS            += -lprocps -lXss -lgio-2.0 -lglib-2.0 -lX11
+QMAKE_CXXFLAGS  += -Werror=return-type -Werror=return-local-addr -Werror=uninitialized -Werror=unused-label -execution-charset:utf-8
 
-INCLUDEPATH += $$PWD/
+INCLUDEPATH     += $$PWD/
 
 
 INSTALL_HEADER_DIR = /usr/include/graceful/
