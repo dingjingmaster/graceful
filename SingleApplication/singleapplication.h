@@ -23,14 +23,9 @@
 #ifndef SINGLE_APPLICATION_H
 #define SINGLE_APPLICATION_H
 
+#include <QApplication>
 #include <QtCore/QtGlobal>
 #include <QtNetwork/QLocalSocket>
-
-#ifndef QAPPLICATION_CLASS
-  #define QAPPLICATION_CLASS QCoreApplication
-#endif
-
-#include QT_STRINGIFY(QAPPLICATION_CLASS)
 
 class SingleApplicationPrivate;
 
@@ -39,11 +34,9 @@ class SingleApplicationPrivate;
  * Application
  * @see QCoreApplication
  */
-class SingleApplication : public QAPPLICATION_CLASS
+class SingleApplication : public QApplication
 {
     Q_OBJECT
-
-    using app_t = QAPPLICATION_CLASS;
 
 public:
     /**

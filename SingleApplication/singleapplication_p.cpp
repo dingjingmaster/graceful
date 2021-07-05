@@ -132,22 +132,22 @@ void SingleApplicationPrivate::genBlockServerName()
 {
     QCryptographicHash appData( QCryptographicHash::Sha256 );
     appData.addData( "SingleApplication", 17 );
-    appData.addData( SingleApplication::app_t::applicationName().toUtf8() );
-    appData.addData( SingleApplication::app_t::organizationName().toUtf8() );
-    appData.addData( SingleApplication::app_t::organizationDomain().toUtf8() );
+    appData.addData( SingleApplication::QApplication::applicationName().toUtf8() );
+    appData.addData( SingleApplication::QApplication::organizationName().toUtf8() );
+    appData.addData( SingleApplication::QApplication::organizationDomain().toUtf8() );
 
     if ( ! appDataList.isEmpty() )
         appData.addData( appDataList.join( "" ).toUtf8() );
 
     if( ! (options & SingleApplication::Mode::ExcludeAppVersion) ){
-        appData.addData( SingleApplication::app_t::applicationVersion().toUtf8() );
+        appData.addData( SingleApplication::QApplication::applicationVersion().toUtf8() );
     }
 
     if( ! (options & SingleApplication::Mode::ExcludeAppPath) ){
 #ifdef Q_OS_WIN
-        appData.addData( SingleApplication::app_t::applicationFilePath().toLower().toUtf8() );
+        appData.addData( SingleApplication::QApplication::applicationFilePath().toLower().toUtf8() );
 #else
-        appData.addData( SingleApplication::app_t::applicationFilePath().toUtf8() );
+        appData.addData( SingleApplication::QApplication::applicationFilePath().toUtf8() );
 #endif
     }
 

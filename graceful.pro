@@ -4,7 +4,7 @@ TARGET          = graceful
 QT              += core network widgets xml dbus x11extras KWindowSystem
 PKGCONFIG       += Qt5Xdg
 DEFINES         += COMPILE_LIBGRACEFUL
-CONFIG          += no_keywords c++11 link_pkgconfig hide_symbols
+CONFIG          += no_keywords c++11 link_pkgconfig sharedlib
 LIBS            += -lprocps -lXss -lgio-2.0 -lglib-2.0 -lX11
 QMAKE_CXXFLAGS  += -Werror=return-type -Werror=return-local-addr -Werror=uninitialized -Werror=unused-label -execution-charset:utf-8
 
