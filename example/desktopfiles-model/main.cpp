@@ -1,10 +1,10 @@
 #include <QApplication>
 #include <QGuiApplication>
 #include <QMainWindow>
-#include <QTreeView>
 
 #include <QFileSystemModel>
-#include "desktopfiles-model/desktopfile-model.h"
+#include "desktop-view/desktop-view.h"
+#include "desktop-model/desktopfile-model.h"
 
 int main (int argc, char* argv[])
 {
@@ -14,20 +14,20 @@ int main (int argc, char* argv[])
 
     QWidget* mainWindow = new QWidget;
     mainWindow->setFixedSize(900, 900);
-    QTreeView* tree = new QTreeView(mainWindow);
+    DesktopView* view = new DesktopView(mainWindow);
 
 #if 1
     DesktopFileModel* desktopFileModel = new DesktopFileModel;
     desktopFileModel->setRootPath(QDir::currentPath());
-    tree->setModel(desktopFileModel);
+    view->setModel(desktopFileModel);
 #else
     QFileSystemModel* model = new QFileSystemModel;
     model->setRootPath(QDir::currentPath());
 
-    tree->setModel(model);
+    view->setModel(model);
 #endif
 
-    tree->setMinimumSize(900, 900);
+    view->setMinimumSize(900, 900);
     mainWindow->show();
 
     return app.exec();
