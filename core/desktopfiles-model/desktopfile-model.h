@@ -6,7 +6,7 @@
 #include <QAbstractItemModel>
 
 #include "globals.h"
-//#include "file/file.h"
+#include "file/file.h"
 
 class QAbstractItemModelPrivate;
 
@@ -19,14 +19,14 @@ public:
     explicit DesktopFileModelItem (QString uri);
     DesktopFileModelItem(DesktopFileModelItem& other);
 
-    const QString& name() const;
-    const QString& uri() const;
-    const QString& path() const;
+    QString name() const;
+    QString uri() const;
+    QString path() const;
 
     QIcon icon() const;
 
 private:
-    QString                 mUri;                   // use graceful::File
+    File*                   mFile;                   // use graceful::File
 };
 
 
@@ -140,8 +140,8 @@ private:
 Q_SIGNALS:
 
 private:
-    QString                                         mCurrentPath;           //
-    QList<DesktopFileModelItem*>                    mItems;                 //
+    File*                                           mCurrentPath;
+    QList<DesktopFileModelItem*>                    mItems;
 
     Q_DISABLE_COPY(DesktopFileModel)
 };

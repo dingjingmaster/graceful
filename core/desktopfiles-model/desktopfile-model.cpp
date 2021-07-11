@@ -26,11 +26,18 @@ void graceful::DesktopFileModel::setRootPath(QString rootPath)
         return;
     }
 
+    if (mCurrentPath) {
+        delete mCurrentPath;
+        mCurrentPath = nullptr;
+    }
+
     if (!mItems.isEmpty()) {
         removeAll();
     }
 
-    mCurrentPath = rootPath;
+    mCurrentPath = new File(rootPath);
+
+    // enumerat
 
     // insert files
     QStringList ls;
@@ -454,30 +461,30 @@ void graceful::DesktopFileModel::insertFiles(int row, const QStringList &files)
 
 graceful::DesktopFileModelItem::DesktopFileModelItem(QString uri)
 {
-    mUri = uri;
+    mFile = new File(uri);
 }
 
 graceful::DesktopFileModelItem::DesktopFileModelItem(DesktopFileModelItem &other)
 {
-    mUri = other.uri();
+    mFile = new File(other.mFile->uri());
 }
 
-const QString &graceful::DesktopFileModelItem::name() const
+QString graceful::DesktopFileModelItem::name() const
 {
-    return mUri;
+    return mFile->fileName();
 }
 
-const QString &graceful::DesktopFileModelItem::uri() const
+QString graceful::DesktopFileModelItem::uri() const
 {
-    return mUri;
+    return mFile->uri();
 }
 
-const QString &graceful::DesktopFileModelItem::path() const
+QString graceful::DesktopFileModelItem::path() const
 {
-    return mUri;
+    return mFile->path();
 }
 
 QIcon graceful::DesktopFileModelItem::icon() const
 {
-    return QIcon();
+    return mFile->icon();
 }
