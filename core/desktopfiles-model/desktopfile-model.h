@@ -140,7 +140,7 @@ private:
 Q_SIGNALS:
 
 private:
-    File*                                           mCurrentPath;
+    File*                                           mCurrentPath = nullptr;
     QList<DesktopFileModelItem*>                    mItems;
 
     Q_DISABLE_COPY(DesktopFileModel)

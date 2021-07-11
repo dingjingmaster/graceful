@@ -11,14 +11,15 @@ class FilePrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(File)
 public:
-    explicit FilePrivate(QString uri);
+    explicit FilePrivate(File* f, QString uri);
     ~FilePrivate();
 
 public:
     GFile*                              mFile;
+    File*                               q_ptr = nullptr;
 };
 
-FilePrivate::FilePrivate(QString uri)
+FilePrivate::FilePrivate(File* f, QString uri) : QObjectPrivate(), q_ptr(f)
 {
     QString encodeUrl = Utils::urlEncode(uri);
     QUrl url(encodeUrl);
@@ -34,20 +35,17 @@ FilePrivate::~FilePrivate()
 {
     if (mFile)                              g_object_unref(mFile);
 }
-
 }
 
 
-
-
-
-graceful::File::File(QString uri, QObject *parent) : QObject(parent)
+graceful::File::File(QString uri, QObject *parent) : QObject(parent), d_ptr(new FilePrivate(this, uri))
 {
-    d_ptr.reset(new FilePrivate(uri));
+
 }
 
 graceful::File::~File()
 {
+
 }
 
 QString graceful::File::uri()
@@ -84,6 +82,7 @@ QString graceful::File::uriDisplay()
 
 QIcon graceful::File::icon()
 {
+    // fixme://
     return QIcon();
 }
 
@@ -107,6 +106,15 @@ bool graceful::File::isVirtual()
 {
     Q_D(File);
 
+    // fixme://
+
     return false;
+}
+
+const GFile *graceful::File::getGFile()
+{
+    Q_D(File);
+
+    return d->mFile;
 }
 

@@ -8,19 +8,20 @@
 
 #include <syslog.h>
 
+#include "file/file-enumerator.h"
+
 graceful::DesktopFileModel::DesktopFileModel(QObject *parent) : QAbstractItemModel(parent)
 {
-    qDebug() << __FUNCTION__ << __LINE__;
+
 }
 
 graceful::DesktopFileModel::~DesktopFileModel()
 {
-    qDebug() << __FUNCTION__ << __LINE__;
+
 }
 
 void graceful::DesktopFileModel::setRootPath(QString rootPath)
 {
-    qDebug() << __FUNCTION__ << __LINE__;
     // file exists?
     if (rootPath.isEmpty()) {
         return;
@@ -30,32 +31,34 @@ void graceful::DesktopFileModel::setRootPath(QString rootPath)
         delete mCurrentPath;
         mCurrentPath = nullptr;
     }
+    mCurrentPath = new File(rootPath);
 
     if (!mItems.isEmpty()) {
         removeAll();
     }
 
-    mCurrentPath = new File(rootPath);
-
     // enumerat
-
-    // insert files
-    QStringList ls;
-    ls << "aa" << "bb" << "cc" << "dd" << "ee" << "ff";
-
-    insertFiles(0, ls);
+    auto fileEnum = new FileEnumerator(this);
+    fileEnum->setEnumerateDirectory(rootPath);
+    fileEnum->setAutoDelete();
+    fileEnum->enumerateAsync();
+    fileEnum->connect(fileEnum, &FileEnumerator::enumerateFinished, this, [=] (bool res) {
+        if (res) {
+            insertFiles(0, fileEnum->getChildrenUris());
+        } else {
+            qDebug() << "enumerator error!";
+        }
+    });
 }
 
 void graceful::DesktopFileModel::fetchMore(const QModelIndex &parent)
 {
-    qDebug() << __FUNCTION__ << __LINE__;
     Q_UNUSED(parent)
 }
 
 bool graceful::DesktopFileModel::canFetchMore(const QModelIndex &parent) const
 {
-    qDebug() << __FUNCTION__ << __LINE__;
-    if (mCurrentPath.isNull()) {
+    if (!mCurrentPath || !mCurrentPath->isValid()) {
         return false;
     }
 
@@ -65,17 +68,16 @@ bool graceful::DesktopFileModel::canFetchMore(const QModelIndex &parent) const
 
 Qt::ItemFlags graceful::DesktopFileModel::flags(const QModelIndex &index) const
 {
-    qDebug() << __FUNCTION__ << __LINE__;
-//    Qt::ItemFlags flags;
-//    if(index.isValid()) {
-//        flags = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
-//        if(index.column() == ColumnFileName) {
-//            flags |= (Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled | Qt::ItemIsEditable);
-//        }
-//    } else {
-//        flags = Qt::ItemIsDropEnabled;
-//    }
-    return/* flags |*/ Qt::ItemIsEnabled | Qt::ItemNeverHasChildren;
+    Qt::ItemFlags flags;
+    if(index.isValid()) {
+        flags = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+        if(index.column() == ColumnFileName) {
+            flags |= (Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled | Qt::ItemIsEditable);
+        }
+    } else {
+        flags = Qt::ItemIsDropEnabled;
+    }
+    return flags;
 }
 
 //bool graceful::DesktopFileModel::hasChildren(const QModelIndex &parent) const
@@ -132,9 +134,9 @@ QVariant graceful::DesktopFileModel::data(const QModelIndex &index, int role) co
         return QVariant();
     }
 
-//    if ((role == Qt::TextAlignmentRole) || (role == Qt::ForegroundRole)) {
-//        return int(Qt::AlignHCenter | Qt::AlignVCenter);
-//    }
+    if ((role == Qt::TextAlignmentRole) || (role == Qt::ForegroundRole)) {
+        return int(Qt::AlignHCenter | Qt::AlignVCenter);
+    }
 
     DesktopFileModelItem* item = reinterpret_cast<DesktopFileModelItem*>(index.internalPointer());
 
@@ -146,9 +148,9 @@ QVariant graceful::DesktopFileModel::data(const QModelIndex &index, int role) co
     case Qt::DisplayRole:  {
         switch(index.column()) {
         case ColumnFileName:
-            return (item->uri());
+            return item->name();
         case ColumnFileType:
-            return (item->uri());
+            return item->name();
         case ColumnFileMTime:
             return (item->uri());
         case ColumnFileCrTime:

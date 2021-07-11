@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include "globals.h"
+#include <gio/gio.h>
 
 namespace graceful
 {
@@ -26,13 +27,12 @@ public:
     bool isDir();
     bool isValid();
     bool isVirtual();                       // FIXME://
+    const GFile* getGFile();
 
 Q_SIGNALS:
 
-protected:
-    File(FilePrivate&, QString uri, QObject* parent = nullptr);
-
 private:
+    FilePrivate*                d_ptr = nullptr;
     Q_DISABLE_COPY(File)
     Q_DECLARE_PRIVATE(File)
 };
