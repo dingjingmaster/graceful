@@ -1,49 +1,124 @@
 #ifndef DESKTOPFILEMODEL_H
 #define DESKTOPFILEMODEL_H
 
-#include "globals.h"
+#include <QList>
+#include <QString>
 #include <QAbstractItemModel>
+
+#include "globals.h"
+//#include "file/file.h"
 
 class QAbstractItemModelPrivate;
 
 namespace graceful
 {
+
+class GRACEFUL_API DesktopFileModelItem
+{
+public:
+    explicit DesktopFileModelItem (QString uri);
+    DesktopFileModelItem(DesktopFileModelItem& other);
+
+    const QString& name() const;
+    const QString& uri() const;
+    const QString& path() const;
+
+    QIcon icon() const;
+
+private:
+    QString                 mUri;                   // use graceful::File
+};
+
+
 class GRACEFUL_API DesktopFileModel : public QAbstractItemModel
 {
     Q_OBJECT
 public:
+    enum Role
+    {
+        FileInfoRole = Qt::UserRole,
+        FileIsDirRole,
+        FileIsCutRole
+    };
+
+    enum ColumnId
+    {
+        ColumnFileName,
+        ColumnFileType,
+        ColumnFileSize,
+        ColumnFileMTime,
+        ColumnFileCrTime,
+        ColumnFileDTime,
+        ColumnFileOwner,
+        ColumnFileGroup,
+        NumOfColumns
+    };
+
     explicit DesktopFileModel(QObject* parent = nullptr);
     ~DesktopFileModel() override;
 
+    // specific api
+    void setRootPath(QString rootPath);
+
+
+    // override
+    /**
+     * @brief list current folder's file
+     */
     virtual void fetchMore(const QModelIndex &parent) override;
     virtual bool canFetchMore(const QModelIndex &parent) const override;
     virtual Qt::ItemFlags flags(const QModelIndex &index) const override;
-    virtual bool hasChildren(const QModelIndex &parent = QModelIndex()) const override;
-    virtual bool insertRows(int row, int count, const QModelIndex &parent = QModelIndex()) override;
-    virtual bool insertColumns(int column, int count, const QModelIndex &parent = QModelIndex()) override;
 
-    virtual QMap<int, QVariant> itemData(const QModelIndex &index) const override;
-    virtual QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
+    /**
+     * @brief file has parent is folder
+     */
+//    virtual bool hasChildren(const QModelIndex &parent = QModelIndex()) const override;
+//    virtual bool insertRows(int row, int count, const QModelIndex &parent = QModelIndex()) override;
+//    virtual bool insertColumns(int column, int count, const QModelIndex &parent = QModelIndex()) override;
+
+//    virtual QMap<int, QVariant> itemData(const QModelIndex &index) const override;
+
+    /**
+     * @brief
+     */
+    virtual QVariant data(const QModelIndex &index, int role) const override;
+
+    /**
+     * @brief
+     */
     virtual QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
-    virtual QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
+    virtual QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
 
-    virtual QModelIndexList match(const QModelIndex &start, int role, const QVariant &value, int hits = 1, Qt::MatchFlags flags = Qt::MatchFlags(Qt::MatchStartsWith|Qt::MatchWrap)) const override;
+//    virtual QModelIndexList match(const QModelIndex &start, int role, const QVariant &value, int hits = 1, Qt::MatchFlags flags = Qt::MatchFlags(Qt::MatchStartsWith|Qt::MatchWrap)) const override;
     virtual QStringList mimeTypes() const override;
     virtual QMimeData* mimeData(const QModelIndexList &indexes) const override;
-    virtual bool moveRows(const QModelIndex &sourceParent, int sourceRow, int count, const QModelIndex &destinationParent, int destinationChild) override;
-    virtual bool moveColumns(const QModelIndex &sourceParent, int sourceColumn, int count, const QModelIndex &destinationParent, int destinationChild) override;
+//    virtual bool moveRows(const QModelIndex &sourceParent, int sourceRow, int count, const QModelIndex &destinationParent, int destinationChild) override;
+//    virtual bool moveColumns(const QModelIndex &sourceParent, int sourceColumn, int count, const QModelIndex &destinationParent, int destinationChild) override;
     virtual QModelIndex parent(const QModelIndex &index) const override;
 
+    /**
+     * @brief
+     * data row counts MUST!
+     */
     virtual int rowCount(const QModelIndex &parent = QModelIndex()) const override;
+
+    /**
+     * @brief
+     * data column counts  MUST!
+     */
     virtual int columnCount(const QModelIndex &parent = QModelIndex()) const override;
     virtual bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex()) override;
     virtual bool removeColumns(int column, int count, const QModelIndex &parent = QModelIndex()) override;
 
     virtual bool setItemData(const QModelIndex &index, const QMap<int, QVariant> &roles) override;
+
+    /**
+     * @brief modify file
+     */
     virtual bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
     virtual bool setHeaderData(int section, Qt::Orientation orientation, const QVariant &value, int role = Qt::EditRole) override;
 
-    virtual QSize span(const QModelIndex &index) const override;
+//    virtual QSize span(const QModelIndex &index) const override;
     virtual void sort(int column, Qt::SortOrder order = Qt::AscendingOrder) override;
     virtual QModelIndex sibling(int row, int column, const QModelIndex &index) const override;
 
@@ -52,13 +127,22 @@ public:
     virtual bool dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent) override;
     virtual bool canDropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent) const override;
 
-protected:
-    DesktopFileModel(QAbstractItemModelPrivate& dd, QObject *parent);
 
+private:
+    /**
+     * @brief
+     * clear all items in model
+     */
+    void removeAll();
+
+    void insertFiles(int row, const QStringList& files);
 
 Q_SIGNALS:
 
 private:
+    QString                                         mCurrentPath;           //
+    QList<DesktopFileModelItem*>                    mItems;                 //
+
     Q_DISABLE_COPY(DesktopFileModel)
 };
 }

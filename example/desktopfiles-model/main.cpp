@@ -11,13 +11,14 @@ int main (int argc, char* argv[])
     using namespace graceful;
 
     QApplication app(argc, argv);
+
     QWidget* mainWindow = new QWidget;
     mainWindow->setFixedSize(900, 900);
-    QTreeView *tree = new QTreeView(mainWindow);
+    QTreeView* tree = new QTreeView(mainWindow);
 
 #if 1
     DesktopFileModel* desktopFileModel = new DesktopFileModel;
-//    desktopFileModel->setRootPath(QDir::currentPath());
+    desktopFileModel->setRootPath(QDir::currentPath());
     tree->setModel(desktopFileModel);
 #else
     QFileSystemModel* model = new QFileSystemModel;

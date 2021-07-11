@@ -2,10 +2,10 @@ TEMPLATE        = lib
 TARGET          = graceful
 
 QT              += core network widgets xml dbus x11extras KWindowSystem widgets-private
-PKGCONFIG       += Qt5Xdg gio-2.0 glib-2.0
 DEFINES         += COMPILE_LIBGRACEFUL
 CONFIG          += no_keywords c++11 link_pkgconfig sharedlib
 LIBS            += -lprocps -lXss -lX11
+PKGCONFIG       += Qt5Xdg gio-2.0 glib-2.0
 QMAKE_CXXFLAGS  += -Werror=return-type -Werror=return-local-addr -Werror=uninitialized -Werror=unused-label -execution-charset:utf-8
 
 INCLUDEPATH     += $$PWD/
