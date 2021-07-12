@@ -305,7 +305,7 @@ QWidget *IconViewDelegate::createEditor(QWidget *parent, const QStyleOptionViewI
         edit->minimalAdjust();
     });
 
-    getView()->setEditFlag(true);
+//    getView()->setEditFlag(true);
     connect(edit, &IconViewEditor::returnPressed, getView(), [=]() {
         this->setModelData(edit, nullptr, index);
         edit->deleteLater();

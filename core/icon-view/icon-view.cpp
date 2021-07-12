@@ -2,6 +2,7 @@
 
 #include "gscreen.h"
 #include "icon-view-delegate.h"
+#include "file-model/file-model.h"
 
 #include <QDebug>
 #include <QAction>
@@ -124,10 +125,8 @@ IconView::IconView(QWidget *parent) : QAbstractItemView(parent)
                 break;
             }
         }
-        qDebug() << "DJ- " << __FUNCTION__ << "  -- 7";
 
         swaGScreen(mPrimaryScreen, oldPrimaryScreen);
-        qDebug() << "DJ- " << __FUNCTION__ << "  -- 8";
     });
 
 //    connect(m_model, &DesktopFileModel::fileDeleted, this, [=] (const QString& uri) {
@@ -508,11 +507,6 @@ QPoint IconView::getMarginLeftTop() const
     return p * level;
 }
 
-void IconView::openFileByUri(QString uri)
-{
-
-}
-
 QSize IconView::getGridSize() const
 {
     QPoint mg = getMarginLeftTop();
@@ -700,8 +694,8 @@ void IconView::paintEvent(QPaintEvent *event)
             opt.state &= ~QStyle::State_MouseOver;
         }
 
-//        qApp->style()->drawControl(QStyle::CE_ItemViewItem, &opt, &p, this);
-        itemDelegate()->paint(&p, opt, index);
+        qApp->style()->drawControl(QStyle::CE_ItemViewItem, &opt, &p, this);
+//        itemDelegate()->paint(&p, opt, index);
     }
 }
 
@@ -850,9 +844,7 @@ void IconView::mousePressEvent(QMouseEvent* e)
         return;
     }
 
-    QAbstractItemView::mousePressEvent(e);
-
-    qDebug() << mDragStartPos;
+//    QAbstractItemView::mousePressEvent(e);
 }
 
 void IconView::mouseMoveEvent(QMouseEvent *event)
@@ -885,17 +877,12 @@ void IconView::mouseReleaseEvent(QMouseEvent *event)
 
 void IconView::mouseDoubleClickEvent(QMouseEvent* event)
 {
-    QPoint tmp = event->pos();
-    QPoint p = getScreenByPos(tmp)->getGridCenterPoint(tmp);
-    QModelIndex index = indexAt(p);
-
-    if (!mIsEdit) {
-        if (event->button() & Qt::LeftButton && index.isValid()) {
-            openFileByUri(index.data(Qt::UserRole).toString());
+    if (Qt::LeftButton == event->button()) {
+        QModelIndex index = indexAt(event->pos());
+        if (index.isValid()) {
+            Q_EMIT doubleClickFile(index.data(FileModel::FileUriRole).toString());
         }
     }
-
-    mRealDoEdit = false;
 }
 
 QStyleOptionViewItem IconView::viewOptions() const

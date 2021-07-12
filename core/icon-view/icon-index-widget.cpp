@@ -138,14 +138,14 @@ void IconIndexWidget::mousePressEvent(QMouseEvent *event)
 
 void IconIndexWidget::mouseDoubleClickEvent(QMouseEvent *event)
 {
-    auto view = mDelegate->getView();
-    if (!view->selectionModel()->selectedIndexes().contains(mIndex)) {
-        this->close();
-        return;
-    }
+//    auto view = mDelegate->getView();
+//    if (!view->selectionModel()->selectedIndexes().contains(mIndex)) {
+//        this->close();
+//        return;
+//    }
 
-    mDelegate->getView()->activated(mIndex);
-    mDelegate->getView()->setIndexWidget(mIndex, nullptr);
+//    mDelegate->getView()->activated(mIndex);
+//    mDelegate->getView()->setIndexWidget(mIndex, nullptr);
     return;
 }
 

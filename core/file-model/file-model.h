@@ -39,7 +39,8 @@ public:
     {
         FileInfoRole = Qt::UserRole,
         FileIsDirRole,
-        FileIsCutRole
+        FileIsCutRole,
+        FileUriRole
     };
 
     enum ColumnId

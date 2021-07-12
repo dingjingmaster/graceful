@@ -63,7 +63,6 @@ public:
     void setRenaming (bool);
     void setEditFlag (bool);
     const QRect getBoundingRect();
-    void openFileByUri(QString uri);
 
     QSize getGridSize() const;
     QSize getIconSize() const;
@@ -81,8 +80,8 @@ private:
     GScreen* getScreenByPos (const QPoint& pos);
 
 Q_SIGNALS:
-    void updateBWList ();
-    void deleteFileFromView (QString uri);
+    void doubleClickFile(QString uri);
+    void deleteFileFromView(QString uri);
     void screenResolutionChanged(GScreen* screen);
 
 protected:

@@ -170,6 +170,7 @@ QVariant graceful::FileModel::data(const QModelIndex &index, int role) const
         }
         break;
     }
+    case FileUriRole:
     case FileInfoRole:
         return (item->uri());
     case FileIsDirRole:
@@ -183,11 +184,9 @@ QVariant graceful::FileModel::data(const QModelIndex &index, int role) const
 
 QModelIndex graceful::FileModel::index(int row, int column, const QModelIndex &parent) const
 {
-    qDebug() << __FUNCTION__ << __LINE__ << "  index";
     if(row < 0 || row >= mItems.size() || column < 0 || column >= NumOfColumns) {
         return QModelIndex();
     }
-    qDebug() << __FUNCTION__ << __LINE__ << "  index";
 
     const FileModelItem* item = mItems.at(row);
 
@@ -239,7 +238,6 @@ QVariant graceful::FileModel::headerData(int section, Qt::Orientation orientatio
 
 QStringList graceful::FileModel::mimeTypes() const
 {
-    qDebug() << __FUNCTION__ << __LINE__;
     QStringList types = QAbstractItemModel::mimeTypes();
 
     types << QStringLiteral("XdndDirectSave0");
@@ -250,7 +248,6 @@ QStringList graceful::FileModel::mimeTypes() const
 
 QMimeData *graceful::FileModel::mimeData(const QModelIndexList &indexes) const
 {
-    qDebug() << __FUNCTION__ << __LINE__;
     QMimeData* data = QAbstractItemModel::mimeData(indexes);
     QByteArray urilist, libfmUrilist;
     urilist.reserve(4096);
@@ -295,13 +292,9 @@ QMimeData *graceful::FileModel::mimeData(const QModelIndexList &indexes) const
 
 QModelIndex graceful::FileModel::parent(const QModelIndex &index) const
 {
-    qDebug() << __FUNCTION__ << __LINE__;
-
     if (!index.isValid()) {
         return QModelIndex();
     }
-
-    qDebug() << __FUNCTION__ << " --- " << index.row() << "  --  " << index.column();
 
     const FileModelItem* item = mItems.at(index.row());
 
@@ -310,18 +303,15 @@ QModelIndex graceful::FileModel::parent(const QModelIndex &index) const
 
 int graceful::FileModel::rowCount(const QModelIndex &parent) const
 {
-    qDebug() << __FUNCTION__ << __LINE__ << " -- " << mItems.size();
     if (parent.isValid()) {
         return 0;
     }
-    qDebug() << __FUNCTION__ << __LINE__ << " -- " << mItems.size();
 
     return mItems.size();
 }
 
 int graceful::FileModel::columnCount(const QModelIndex &parent) const
 {
-    qDebug() << __FUNCTION__ << __LINE__;
     if (parent.isValid()) {
         return 0;
     }
@@ -331,7 +321,6 @@ int graceful::FileModel::columnCount(const QModelIndex &parent) const
 
 bool graceful::FileModel::removeRows(int row, int count, const QModelIndex& parent)
 {
-    qDebug() << __FUNCTION__ << __LINE__;
     return true;
 
     Q_UNUSED(row)
@@ -341,7 +330,6 @@ bool graceful::FileModel::removeRows(int row, int count, const QModelIndex& pare
 
 bool graceful::FileModel::removeColumns(int column, int count, const QModelIndex &parent)
 {
-    qDebug() << __FUNCTION__ << __LINE__;
     return false;
     Q_UNUSED(count)
     Q_UNUSED(parent)
@@ -350,7 +338,6 @@ bool graceful::FileModel::removeColumns(int column, int count, const QModelIndex
 
 bool graceful::FileModel::setItemData(const QModelIndex &index, const QMap<int, QVariant> &roles)
 {
-    qDebug() << __FUNCTION__ << __LINE__;
     return false;
     Q_UNUSED(index)
     Q_UNUSED(roles)
@@ -358,7 +345,6 @@ bool graceful::FileModel::setItemData(const QModelIndex &index, const QMap<int, 
 
 bool graceful::FileModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
-    qDebug() << __FUNCTION__ << __LINE__;
     if (index.row() >= 0 && index.row() < mItems.size() && (role == Qt::EditRole || role == Qt::DisplayRole)) {
 //        const QString valueString = value.toString();
 //        if (mItems.at(index.row()) == valueString) {
@@ -373,7 +359,6 @@ bool graceful::FileModel::setData(const QModelIndex &index, const QVariant &valu
 
 bool graceful::FileModel::setHeaderData(int section, Qt::Orientation orientation, const QVariant &value, int role)
 {
-    qDebug() << __FUNCTION__ << __LINE__;
     return false;
 }
 
@@ -385,13 +370,11 @@ bool graceful::FileModel::setHeaderData(int section, Qt::Orientation orientation
 
 void graceful::FileModel::sort(int column, Qt::SortOrder order)
 {
-    qDebug() << __FUNCTION__ << __LINE__;
     QAbstractItemModel::sort(column, order);
 }
 
 QModelIndex graceful::FileModel::sibling(int row, int column, const QModelIndex &index) const
 {
-    qDebug() << __FUNCTION__ << __LINE__;
     if (row == index.row() && column < NumOfColumns) {
         return createIndex(row, column, index.internalPointer());
     } else {
@@ -401,31 +384,26 @@ QModelIndex graceful::FileModel::sibling(int row, int column, const QModelIndex 
 
 Qt::DropActions graceful::FileModel::supportedDragActions() const
 {
-    qDebug() << __FUNCTION__ << __LINE__;
     return Qt::CopyAction;
 }
 
 Qt::DropActions graceful::FileModel::supportedDropActions() const
 {
-    qDebug() << __FUNCTION__ << __LINE__;
     return QAbstractItemModel::supportedDropActions() | Qt::MoveAction;
 }
 
 bool graceful::FileModel::dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent)
 {
-    qDebug() << __FUNCTION__ << __LINE__;
     return QAbstractItemModel::dropMimeData(data, action, row, column, parent);
 }
 
 bool graceful::FileModel::canDropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent) const
 {
-    qDebug() << __FUNCTION__ << __LINE__;
     return QAbstractItemModel::canDropMimeData(data, action, row, column, parent);
 }
 
 void graceful::FileModel::removeAll()
 {
-    qDebug() << __FUNCTION__ << __LINE__;
     if (mItems.empty()) {
         return;
     }
@@ -440,14 +418,12 @@ void graceful::FileModel::removeAll()
 
 void graceful::FileModel::insertFiles(int row, const QStringList &files)
 {
-    qDebug() << __FUNCTION__ << __LINE__;
     int filesNum = files.size();
 
     beginInsertRows(QModelIndex(), row, row + filesNum - 1);
     for (QString f : files) {
         FileModelItem* item = new FileModelItem(f);
         mItems.append(item);
-        qDebug() << "insert:" << f;
     }
     endInsertRows();
 }
