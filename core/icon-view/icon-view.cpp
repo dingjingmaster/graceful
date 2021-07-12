@@ -1,6 +1,6 @@
-#include "desktop-view.h"
+#include "icon-view.h"
 
-#include "desktop-view-delegate.h"
+#include "icon-view-delegate.h"
 
 #include <QDebug>
 #include <QAction>
@@ -24,7 +24,7 @@ static bool iconSizeLessThan (const QPair<QString, QPoint> &p1, const QPair<QStr
 namespace graceful
 {
 
-DesktopView::DesktopView(QWidget *parent) : QAbstractItemView(parent)
+IconView::IconView(QWidget *parent) : QAbstractItemView(parent)
 {
     setAttribute(Qt::WA_AlwaysStackOnTop);
     setWindowFlag(Qt::FramelessWindowHint);
@@ -41,12 +41,12 @@ DesktopView::DesktopView(QWidget *parent) : QAbstractItemView(parent)
 
     viewport()->setAutoFillBackground(false);
 
-    m_last_index = QModelIndex();
+    mLastIndex = QModelIndex();
 
-    m_edit_trigger_timer.setInterval(3000);
-    m_edit_trigger_timer.setSingleShot(true);
+    mEditTriggerTimer.setInterval(3000);
+    mEditTriggerTimer.setSingleShot(true);
 
-    setItemDelegate(new DesktopViewDelegate(this));
+    setItemDelegate(new IconViewDelegate(this));
 
     QIcon::setThemeName("ukui-icon-theme-default");
 
@@ -61,17 +61,17 @@ DesktopView::DesktopView(QWidget *parent) : QAbstractItemView(parent)
         auto screen = new GScreen(qscreen, getGridSize(), this);
         addScreen(screen);
         if (qApp->primaryScreen() == qscreen) {
-            m_primaryScreen = screen;
+            mPrimaryScreen = screen;
         }
     }
 
-    m_rubberBand = new QRubberBand(QRubberBand::Rectangle, this);
+    mRubberBand = new QRubberBand(QRubberBand::Rectangle, this);
 
     connect(qApp, &QGuiApplication::screenAdded, this, [=] (QScreen* screen) {
         addScreen(new GScreen(screen, getGridSize(), this));
-        for (auto sc : m_screens) {
+        for (auto sc : mScreens) {
             if (qApp->primaryScreen() == sc->getScreen()) {
-                m_primaryScreen = sc;
+                mPrimaryScreen = sc;
             }
         }
     });
@@ -80,7 +80,7 @@ DesktopView::DesktopView(QWidget *parent) : QAbstractItemView(parent)
         GScreen* s = nullptr;
         QList<QPair<QString, QPoint>> uris;
         QStringList ls;
-        for (auto sc : m_screens) {
+        for (auto sc : mScreens) {
             if (sc->getScreen() == screen) {
                 uris << sc->getItemsAndPosAll();
                 s = sc;
@@ -91,17 +91,17 @@ DesktopView::DesktopView(QWidget *parent) : QAbstractItemView(parent)
         std::stable_sort(uris.begin(), uris.end(), iconSizeLessThan);
         for (auto u : uris) {
             ls << u.first;
-            m_itemsPosesCached.remove(u.first);
+            mItemsPosesCached.remove(u.first);
         }
 
-        if (s) m_screens.removeOne(s);
+        if (s) mScreens.removeOne(s);
         s->deleteLater();
 
-        if (m_screens.size() == 0) {
-            m_primaryScreen->putIconsOnScreen(ls, true);
+        if (mScreens.size() == 0) {
+            mPrimaryScreen->putIconsOnScreen(ls, true);
         } else {
             bool putOK = false;
-            for (auto s1 : m_screens) {
+            for (auto s1 : mScreens) {
                 if (ls.isEmpty()) {
                     putOK = true;
                     break;
@@ -109,7 +109,7 @@ DesktopView::DesktopView(QWidget *parent) : QAbstractItemView(parent)
                 ls = s1->putIconsOnScreen(ls);
             }
 
-            m_primaryScreen->putIconsOnScreen(ls, true);
+            mPrimaryScreen->putIconsOnScreen(ls, true);
         }
     });
 
@@ -120,62 +120,62 @@ DesktopView::DesktopView(QWidget *parent) : QAbstractItemView(parent)
     connect(qApp, &QGuiApplication::primaryScreenChanged, this, [=] (QScreen* prims) {
         qDebug() << "DJ- &QGuiApplication::primaryScreenChanged" << prims;
 
-        GScreen* oldPrimaryScreen = m_primaryScreen;
-        for (auto s : m_screens) {
+        GScreen* oldPrimaryScreen = mPrimaryScreen;
+        for (auto s : mScreens) {
             if (prims == s->getScreen()) {
-                m_primaryScreen = s;
+                mPrimaryScreen = s;
                 break;
             }
         }
         qDebug() << "DJ- " << __FUNCTION__ << "  -- 7";
 
-        swaGScreen(m_primaryScreen, oldPrimaryScreen);
+        swaGScreen(mPrimaryScreen, oldPrimaryScreen);
         qDebug() << "DJ- " << __FUNCTION__ << "  -- 8";
     });
 
 //    connect(m_model, &DesktopFileModel::fileDeleted, this, [=] (const QString& uri) {
 //        qDebug() << "DJ- delete uri: " << uri << " from view";
-//        m_items.removeOne(uri);
-//        m_floatItems.removeOne(uri);
-//        m_itemsPosesCached.remove(uri);
-//        for (auto s : m_screens) {
+//        mItems.removeOne(uri);
+//        mFloatItems.removeOne(uri);
+//        mItemsPosesCached.remove(uri);
+//        for (auto s : mScreens) {
 //            s->makeItemGridPosInvalid(uri);
 //            s->makeItemMetaPosInvalid(uri);
 //        }
 //    });
 
-    connect(this, &DesktopView::screenResolutionChanged, this, [=] (GScreen* s) {
+    connect(this, &IconView::screenResolutionChanged, this, [=] (GScreen* s) {
         if (!s || !s->isValidScreen()) {
             return ;
         }
 
         QStringList uris = s->getAllItemsOnScreen();
         for (auto uri : uris) {
-            m_itemsPosesCached.remove(uri);
+            mItemsPosesCached.remove(uri);
         }
     });
 }
 
-GScreen *DesktopView::getScreen(int screenId)
+GScreen *IconView::getScreen(int screenId)
 {
-    if (m_screens.count() > screenId) {
-        return m_screens.at(screenId);
+    if (mScreens.count() > screenId) {
+        return mScreens.at(screenId);
     } else {
         return nullptr;
     }
 }
 
-void DesktopView::addScreen(GScreen *screen)
+void IconView::addScreen(GScreen *screen)
 {
     connect(screen, &GScreen::screenVisibleChanged, this, [=] (bool visible) {
         if (!visible) {
             removeScreen(screen);
         }
     });
-    m_screens<<screen;
+    mScreens<<screen;
 }
 
-void DesktopView::swaGScreen(GScreen *screen1, GScreen *screen2)
+void IconView::swaGScreen(GScreen *screen1, GScreen *screen2)
 {
     if (!screen1 || !screen2 || screen1 == screen2) {
         qCritical() << "DJ- invalide screen arguments " << screen1 << "  ---  " << screen2;
@@ -195,10 +195,10 @@ void DesktopView::swaGScreen(GScreen *screen1, GScreen *screen2)
     screen1->swapScreen(*screen2);
 
     // list操作
-    int index1 = m_screens.indexOf(screen1);
-    int index2 = m_screens.indexOf(screen2);
-    m_screens.replace(index1, screen2);
-    m_screens.replace(index2, screen1);
+    int index1 = mScreens.indexOf(screen1);
+    int index2 = mScreens.indexOf(screen2);
+    mScreens.replace(index1, screen2);
+    mScreens.replace(index2, screen1);
 
 #if 0
     qDebug() << "DJ- 改变之前:";
@@ -208,20 +208,20 @@ void DesktopView::swaGScreen(GScreen *screen1, GScreen *screen2)
 
 #if 0
     qDebug() << "DJ- 最后次序:";
-    for (auto s : m_screens) {
+    for (auto s : mScreens) {
         qDebug() << "DJ- " << s;
     }
 #endif
 
     for (auto uri : uris) {
-        m_itemsPosesCached.remove(uri);
+        mItemsPosesCached.remove(uri);
     }
 
     this->handleScreenChanged(screen1);
     this->handleScreenChanged(screen2);
 }
 
-void DesktopView::removeScreen(GScreen *screen)
+void IconView::removeScreen(GScreen *screen)
 {
     if (!screen) {
         qCritical()<<"invalid screen id";
@@ -231,21 +231,21 @@ void DesktopView::removeScreen(GScreen *screen)
     this->handleScreenChanged(screen);
 }
 
-void DesktopView::setGridSize(QSize size)
+void IconView::setGridSize(QSize size)
 {
-    m_gridSize = size;
+    mGridSize = size;
 
-    for (auto screen : m_screens) {
+    for (auto screen : mScreens) {
         screen->onScreenGridSizeChanged(getGridSize());
     }
 
-    for (auto screen : m_screens) {
+    for (auto screen : mScreens) {
         screen->makeAllItemsGridPosInvalid();
     }
     refresh();
 }
 
-QRect DesktopView::visualRect(const QModelIndex &index) const
+QRect IconView::visualRect(const QModelIndex &index) const
 {
     auto marg = getMarginLeftTop();
     auto rect = QRect(QPoint(0, 0), getIconSize());
@@ -253,9 +253,9 @@ QRect DesktopView::visualRect(const QModelIndex &index) const
     if (index.isValid()) {
         QString uri = index.data(Qt::UserRole).toString();
 
-        if (m_itemsPosesCached.contains(uri)) {
-            rect.translate(m_itemsPosesCached[uri]);
-            qDebug() << "m_itemsPosesCached" << uri << m_itemsPosesCached[uri];
+        if (mItemsPosesCached.contains(uri)) {
+            rect.translate(mItemsPosesCached[uri]);
+            qDebug() << "mItemsPosesCached" << uri << mItemsPosesCached[uri];
         } else {
             QPoint pos = getFileMetaInfoPos(uri);
             qDebug() << "getFileMetaInfoPos:" << uri << pos;
@@ -270,12 +270,12 @@ QRect DesktopView::visualRect(const QModelIndex &index) const
     return rect;
 }
 
-bool DesktopView::isRenaming() const
+bool IconView::isRenaming() const
 {
-    return m_is_renaming;
+    return mIsRenaming;
 }
 
-QModelIndex DesktopView::indexAt(const QPoint &point) const
+QModelIndex IconView::indexAt(const QPoint &point) const
 {
     // FIXME://优化
     QList<QRect> visualRects;
@@ -293,7 +293,7 @@ QModelIndex DesktopView::indexAt(const QPoint &point) const
     return QModelIndex();
 }
 
-QModelIndex DesktopView::findIndexByUri(const QString &uri) const
+QModelIndex IconView::findIndexByUri(const QString &uri) const
 {
     if (model()) {
         for (int row = 0; row < model()->rowCount(); row++) {
@@ -308,22 +308,22 @@ QModelIndex DesktopView::findIndexByUri(const QString &uri) const
     return QModelIndex();
 }
 
-QString DesktopView::getIndexUri(const QModelIndex &index) const
+QString IconView::getIndexUri(const QModelIndex &index) const
 {
     return index.data(Qt::UserRole).toString();
 }
 
-bool DesktopView::trySetIndexToPos(const QModelIndex &index, const QPoint &pos)
+bool IconView::trySetIndexToPos(const QModelIndex &index, const QPoint &pos)
 {
     QString uri = getIndexUri(index);
-    for (auto screen : m_screens) {
+    for (auto screen : mScreens) {
         if (!screen->isValidScreen()) {
             continue;
         }
         if (screen->setItemWithGlobalPos(uri, pos)) {
-            m_itemsPosesCached.remove(uri);
+            mItemsPosesCached.remove(uri);
             //清空其它屏幕关于此index的gridPos?
-            for (auto screen : m_screens) {
+            for (auto screen : mScreens) {
                 screen->makeItemGridPosInvalid(uri);
             }
             //效率？
@@ -335,17 +335,17 @@ bool DesktopView::trySetIndexToPos(const QModelIndex &index, const QPoint &pos)
     return false;
 }
 
-bool DesktopView::isIndexOverlapped(const QModelIndex &index)
+bool IconView::isIndexOverlapped(const QModelIndex &index)
 {
     return isItemOverlapped(getIndexUri(index));
 }
 
-bool DesktopView::isItemOverlapped(const QString &uri)
+bool IconView::isItemOverlapped(const QString &uri)
 {
-    auto itemPos = m_itemsPosesCached.value(uri);
+    auto itemPos = mItemsPosesCached.value(uri);
 
-    for (auto item : m_items) {
-        if (m_itemsPosesCached.value(item) == itemPos && item != uri) {
+    for (auto item : mItems) {
+        if (mItemsPosesCached.value(item) == itemPos && item != uri) {
             return true;
         }
     }
@@ -353,12 +353,12 @@ bool DesktopView::isItemOverlapped(const QString &uri)
     return false;
 }
 
-void DesktopView::_saveItemsPoses()
+void IconView::_saveItemsPoses()
 {
     this->saveItemsPositions();
 }
 
-void DesktopView::zoomIn()
+void IconView::zoomIn()
 {
     switch (zoomLevel()) {
     case Small:
@@ -375,7 +375,7 @@ void DesktopView::zoomIn()
     }
 }
 
-void DesktopView::zoomOut()
+void IconView::zoomOut()
 {
     switch (zoomLevel()) {
     case Huge:
@@ -392,12 +392,12 @@ void DesktopView::zoomOut()
     }
 }
 
-void DesktopView::initMenu()
+void IconView::initMenu()
 {
 
 }
 
-void DesktopView::initShoutCut()
+void IconView::initShoutCut()
 {
     QAction *copyAction = new QAction(this);
     copyAction->setShortcut(QKeySequence::Copy);
@@ -468,9 +468,9 @@ void DesktopView::initShoutCut()
     QAction *normalIconAction = new QAction(this);
     normalIconAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_0));
     connect(normalIconAction, &QAction::triggered, [=]() {
-        if (this->zoomLevel() == DesktopView::Normal)
+        if (this->zoomLevel() == IconView::Normal)
             return;
-        this->setDefaultZoomLevel(DesktopView::Normal);
+        this->setDefaultZoomLevel(IconView::Normal);
     });
     addAction(normalIconAction);
 
@@ -498,7 +498,7 @@ void DesktopView::initShoutCut()
     addAction(cancelAction);
 }
 
-QPoint DesktopView::getMarginLeftTop() const
+QPoint IconView::getMarginLeftTop() const
 {
     QPoint p(10, 5);
     float level = 1;
@@ -520,30 +520,30 @@ QPoint DesktopView::getMarginLeftTop() const
     return p * level;
 }
 
-void DesktopView::openFileByUri(QString uri)
+void IconView::openFileByUri(QString uri)
 {
 
 }
 
-QSize DesktopView::getGridSize() const
+QSize IconView::getGridSize() const
 {
     QPoint mg = getMarginLeftTop();
 
-    return QSize(m_gridSize.width() + mg.x(), m_gridSize.height() + mg.y());
+    return QSize(mGridSize.width() + mg.x(), mGridSize.height() + mg.y());
 }
 
-QSize DesktopView::getIconSize() const
+QSize IconView::getIconSize() const
 {
-    return m_gridSize;
+    return mGridSize;
 }
 
-void DesktopView::setShowHidden()
+void IconView::setShowHidden()
 {
 }
 
-GScreen *DesktopView::getScreenByPos(const QPoint &pos)
+GScreen *IconView::getScreenByPos(const QPoint &pos)
 {
-    for (auto s : m_screens) {
+    for (auto s : mScreens) {
         if (s->posIsOnScreen(pos)) {
             return s;
         }
@@ -552,7 +552,7 @@ GScreen *DesktopView::getScreenByPos(const QPoint &pos)
     return nullptr;
 }
 
-void DesktopView::keyPressEvent(QKeyEvent *e)
+void IconView::keyPressEvent(QKeyEvent *e)
 {
     switch (e->key()) {
     case Qt::Key_Home: {
@@ -587,7 +587,7 @@ void DesktopView::keyPressEvent(QKeyEvent *e)
         return;
     case Qt::Key_Shift:
     case Qt::Key_Control:
-        m_ctrl_or_shift_pressed = true;
+        mCtrlOrShiftPressed = true;
         break;
     case Qt::Key_Enter:
     case Qt::Key_Return: {
@@ -598,9 +598,9 @@ void DesktopView::keyPressEvent(QKeyEvent *e)
     }
 }
 
-void DesktopView::setDefaultZoomLevel(DesktopView::ZoomLevel level)
+void IconView::setDefaultZoomLevel(IconView::ZoomLevel level)
 {
-    m_zoom_level = level;
+    mZoomLevel = level;
     switch (level) {
     case Small:
         setIconSize(QSize(24, 24));
@@ -615,34 +615,34 @@ void DesktopView::setDefaultZoomLevel(DesktopView::ZoomLevel level)
         setGridSize(QSize(140, 180));
         break;
     default:
-        m_zoom_level = Normal;
+        mZoomLevel = Normal;
         setIconSize(QSize(48, 48));
         setGridSize(QSize(96, 106));
         break;
     }
 }
 
-void DesktopView::updateItemPosByUri(const QString &uri, const QPoint &pos)
+void IconView::updateItemPosByUri(const QString &uri, const QPoint &pos)
 {
 
 }
 
-DesktopView::ZoomLevel DesktopView::zoomLevel() const
+IconView::ZoomLevel IconView::zoomLevel() const
 {
     return Normal;
 }
 
-const QRect DesktopView::getBoundingRect()
+const QRect IconView::getBoundingRect()
 {
     QRegion itemsRegion(0, 0, 90, 90);
 
     return itemsRegion.boundingRect();
 }
 
-QPoint DesktopView::getFileMetaInfoPos(const QString &uri) const
+QPoint IconView::getFileMetaInfoPos(const QString &uri) const
 {
     QPoint poss = INVALID_POS;
-    for (auto screen : m_screens) {
+    for (auto screen : mScreens) {
         auto pos = screen->getItemGlobalPosition(uri);
         if (pos != INVALID_POS) {
             poss = pos;
@@ -650,7 +650,7 @@ QPoint DesktopView::getFileMetaInfoPos(const QString &uri) const
     }
 
     if (poss == INVALID_POS) {
-        for (auto s : m_screens) {
+        for (auto s : mScreens) {
             QPoint p = s->putIconOnScreen(uri);
             if (INVALID_POS != p) {
                 poss = p;
@@ -662,33 +662,33 @@ QPoint DesktopView::getFileMetaInfoPos(const QString &uri) const
     return poss;
 }
 
-void DesktopView::refresh()
+void IconView::refresh()
 {
-    m_itemsPosesCached.clear();
+    mItemsPosesCached.clear();
 
-    for (auto s : m_screens) {
+    for (auto s : mScreens) {
         s->refresh();
     }
 
     saveItemsPositions();
 }
 
-void DesktopView::setRenaming(bool r)
+void IconView::setRenaming(bool r)
 {
-    m_is_renaming = r;
+    mIsRenaming = r;
 }
 
-void DesktopView::setEditFlag(bool e)
+void IconView::setEditFlag(bool e)
 {
-    m_is_edit = e;
+    mIsEdit = e;
 }
 
-void DesktopView::paintEvent(QPaintEvent *event)
+void IconView::paintEvent(QPaintEvent *event)
 {
     Q_UNUSED(event)
     QPainter p(viewport());
 
-    for (auto item : m_items) {
+    for (auto item : mItems) {
         auto index = findIndexByUri(item);
 
         QStyleOptionViewItem opt = viewOptions();
@@ -706,7 +706,7 @@ void DesktopView::paintEvent(QPaintEvent *event)
             opt.state &= ~QStyle::State_Selected;
         }
 
-        if (m_hover_index == index) {
+        if (mHoverIndex == index) {
             opt.state |= QStyle::State_MouseOver;
         } else {
             opt.state &= ~QStyle::State_MouseOver;
@@ -719,26 +719,26 @@ void DesktopView::paintEvent(QPaintEvent *event)
     }
 }
 
-void DesktopView::dropEvent(QDropEvent* event)
+void IconView::dropEvent(QDropEvent* event)
 {
-    m_real_do_edit = false;
+    mRealDoEdit = false;
 
-    m_edit_trigger_timer.stop();
+    mEditTriggerTimer.stop();
 
     if (event->keyboardModifiers() & Qt::ControlModifier) {
-        m_ctrl_key_pressed = true;
+        mCtrlKeyPressed = true;
     } else {
-        m_ctrl_key_pressed = false;
+        mCtrlKeyPressed = false;
     }
 
-    auto action = m_ctrl_key_pressed ? Qt::CopyAction : Qt::MoveAction;
+    auto action = mCtrlKeyPressed ? Qt::CopyAction : Qt::MoveAction;
     if (this == event->source()) {
         QPoint tmp = event->pos();
 
-        GScreen* dragScreen = getScreenByPos(m_dragStartPos);
+        GScreen* dragScreen = getScreenByPos(mDragStartPos);
         GScreen* droGScreen = getScreenByPos(tmp);
 
-        QPoint dragPoint = m_dragStartPos;
+        QPoint dragPoint = mDragStartPos;
         QPoint dropPoint = tmp;
 
         if (dragScreen && dragScreen->isValidScreen()) {
@@ -758,8 +758,8 @@ void DesktopView::dropEvent(QDropEvent* event)
             QStringList itemsNeedBeRelayouted;
             for (auto index : indexes) {
                 QString uri = getIndexUri(index);
-                m_itemsPosesCached.remove(uri);
-                for (auto screen : m_screens) {
+                mItemsPosesCached.remove(uri);
+                for (auto screen : mScreens) {
                     screen->makeItemGridPosInvalid(uri);
                     screen->makeItemMetaPosInvalid(uri);
                 }
@@ -793,16 +793,16 @@ void DesktopView::dropEvent(QDropEvent* event)
 
     saveItemsPositions();
     viewport()->update();
-    m_drag_flag = false;
+    mDragFlag = false;
 }
 
-void DesktopView::dragMoveEvent(QDragMoveEvent* event)
+void IconView::dragMoveEvent(QDragMoveEvent* event)
 {
-    m_real_do_edit = false;
+    mRealDoEdit = false;
     if (event->keyboardModifiers() & Qt::ControlModifier) {
-        m_ctrl_key_pressed = true;
+        mCtrlKeyPressed = true;
     } else {
-        m_ctrl_key_pressed = false;
+        mCtrlKeyPressed = false;
     }
 
 
@@ -814,50 +814,50 @@ void DesktopView::dragMoveEvent(QDragMoveEvent* event)
     }
 }
 
-void DesktopView::dragEnterEvent(QDragEnterEvent *e)
+void IconView::dragEnterEvent(QDragEnterEvent *e)
 {
 
 }
 
-void DesktopView::startDrag(Qt::DropActions supportedActions)
+void IconView::startDrag(Qt::DropActions supportedActions)
 {
-    m_drag_flag = true;
+    mDragFlag = true;
     QAbstractItemView::startDrag(supportedActions);
 }
 
-void DesktopView::mousePressEvent(QMouseEvent* e)
+void IconView::mousePressEvent(QMouseEvent* e)
 {
     // init
-    m_real_do_edit = false;
-    m_hover_index = QModelIndex();
+    mRealDoEdit = false;
+    mHoverIndex = QModelIndex();
 
-    m_press_pos = e->pos();
-    m_dragStartPos = e->pos();
+    mPressPos = e->pos();
+    mDragStartPos = e->pos();
     QModelIndex index = indexAt(e->pos());
 
     if (e->button() & Qt::LeftButton) {
         if (!index.isValid()) {
-            m_select_flag = true;
+            mSelectFlag = true;
         }
     } else if (e->button() & Qt::RightButton) {
         if (index.isValid() && !selectionModel()->isSelected(index)) {
-            m_last_index = index;
+            mLastIndex = index;
             setSelection(index, QItemSelectionModel::ClearAndSelect);
         }
     }
 
     if (e->modifiers() & Qt::ControlModifier) {
-        m_ctrl_key_pressed = true;
+        mCtrlKeyPressed = true;
     } else {
-        m_ctrl_key_pressed = false;
+        mCtrlKeyPressed = false;
     }
 
-    if (!m_ctrl_or_shift_pressed) {
+    if (!mCtrlOrShiftPressed) {
         if (!indexAt(e->pos()).isValid()) {
             clearSelection();
         } else {
             auto index = indexAt(e->pos());
-            m_last_index = index;
+            mLastIndex = index;
         }
     }
 
@@ -867,53 +867,53 @@ void DesktopView::mousePressEvent(QMouseEvent* e)
 
     QAbstractItemView::mousePressEvent(e);
 
-    qDebug() << m_dragStartPos;
+    qDebug() << mDragStartPos;
 }
 
-void DesktopView::mouseMoveEvent(QMouseEvent *event)
+void IconView::mouseMoveEvent(QMouseEvent *event)
 {
     QModelIndex index = indexAt(event->pos());
-    m_hover_index = (!m_select_flag && index.isValid()) ? index : QModelIndex();
+    mHoverIndex = (!mSelectFlag && index.isValid()) ? index : QModelIndex();
 
-    if (!indexAt(m_dragStartPos).isValid() && event->buttons() & Qt::LeftButton) {
-        if (m_rubberBand->size().width() > 100 && m_rubberBand->height() > 100) {
-            m_rubberBand->setVisible(true);
+    if (!indexAt(mDragStartPos).isValid() && event->buttons() & Qt::LeftButton) {
+        if (mRubberBand->size().width() > 100 && mRubberBand->height() > 100) {
+            mRubberBand->setVisible(true);
         }
-        setSelection(m_rubberBand->geometry(), QItemSelectionModel::Select | QItemSelectionModel::Deselect);
+        setSelection(mRubberBand->geometry(), QItemSelectionModel::Select | QItemSelectionModel::Deselect);
     } else {
-        m_rubberBand->setVisible(false);
+        mRubberBand->setVisible(false);
     }
 
-    m_rubberBand->setGeometry(QRect(m_dragStartPos, event->pos()).normalized());
+    mRubberBand->setGeometry(QRect(mDragStartPos, event->pos()).normalized());
 
     QAbstractItemView::mouseMoveEvent(event);
 }
 
-void DesktopView::mouseReleaseEvent(QMouseEvent *event)
+void IconView::mouseReleaseEvent(QMouseEvent *event)
 {
-    m_rubberBand->hide();
+    mRubberBand->hide();
 
-    m_select_flag = false;
+    mSelectFlag = false;
 
     QAbstractItemView::mouseReleaseEvent(event);
 }
 
-void DesktopView::mouseDoubleClickEvent(QMouseEvent* event)
+void IconView::mouseDoubleClickEvent(QMouseEvent* event)
 {
     QPoint tmp = event->pos();
     QPoint p = getScreenByPos(tmp)->getGridCenterPoint(tmp);
     QModelIndex index = indexAt(p);
 
-    if (!m_is_edit) {
+    if (!mIsEdit) {
         if (event->button() & Qt::LeftButton && index.isValid()) {
             openFileByUri(index.data(Qt::UserRole).toString());
         }
     }
 
-    m_real_do_edit = false;
+    mRealDoEdit = false;
 }
 
-QStyleOptionViewItem DesktopView::viewOptions() const
+QStyleOptionViewItem IconView::viewOptions() const
 {
     QStyleOptionViewItem item;
     item.palette.setBrush(QPalette::Text, Qt::white);
@@ -927,9 +927,9 @@ QStyleOptionViewItem DesktopView::viewOptions() const
     return item;
 }
 
-void DesktopView::setSelection(const QRect &rect, QItemSelectionModel::SelectionFlags command)
+void IconView::setSelection(const QRect &rect, QItemSelectionModel::SelectionFlags command)
 {
-    if (m_rubberBand->isVisible()) {
+    if (mRubberBand->isVisible()) {
         for (int row = 0; row < model()->rowCount(); row++) {
             auto index = model()->index(row, 0);
             auto indexRect = visualRect(index);
@@ -945,7 +945,7 @@ void DesktopView::setSelection(const QRect &rect, QItemSelectionModel::Selection
     }
 }
 
-QRegion DesktopView::visualRegionForSelection(const QItemSelection &selection) const
+QRegion IconView::visualRegionForSelection(const QItemSelection &selection) const
 {
     QRegion visualRegion;
 
@@ -956,7 +956,7 @@ QRegion DesktopView::visualRegionForSelection(const QItemSelection &selection) c
     return visualRegion;
 }
 
-void DesktopView::setSelection(const QModelIndex &index, QItemSelectionModel::SelectionFlags command)
+void IconView::setSelection(const QModelIndex &index, QItemSelectionModel::SelectionFlags command)
 {
     if (!index.isValid())
         return;
@@ -964,7 +964,7 @@ void DesktopView::setSelection(const QModelIndex &index, QItemSelectionModel::Se
     selectionModel()->select(index, command);
 }
 
-void DesktopView::dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles)
+void IconView::dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles)
 {
     auto string = topLeft.data().toString();
     Q_UNUSED(bottomRight)
@@ -973,7 +973,7 @@ void DesktopView::dataChanged(const QModelIndex &topLeft, const QModelIndex &bot
     viewport()->update(demageRect);
 }
 
-void DesktopView::rowsInserted(const QModelIndex &parent, int start, int end)
+void IconView::rowsInserted(const QModelIndex &parent, int start, int end)
 {
     QStringList needPut;
     for (int i = start; i <= end ; i++) {
@@ -982,16 +982,16 @@ void DesktopView::rowsInserted(const QModelIndex &parent, int start, int end)
         if (index.isValid()) {
             bool success = false;
             QString uri = getIndexUri(index);
-            m_items.append(uri);
+            mItems.append(uri);
 
             // 优先获取 meta 信息
-            m_itemsPosesCached.remove(uri);
+            mItemsPosesCached.remove(uri);
             QPoint pos = getFileMetaInfoPos(uri);
             if (INVALID_POS != pos) {
                 success = true;
             } else {
-                m_floatItems << uri;
-                for (auto screen : m_screens) {
+                mFloatItems << uri;
+                for (auto screen : mScreens) {
                     auto gridPos = screen->putIconOnScreen(uri, QPoint(0, 0));
                     if (gridPos.x() >= 0) {
                         success = true;
@@ -1001,7 +1001,7 @@ void DesktopView::rowsInserted(const QModelIndex &parent, int start, int end)
             }
 
             if (!success) {
-                m_primaryScreen->putIconOnScreen(uri, QPoint(), true);
+                mPrimaryScreen->putIconOnScreen(uri, QPoint(), true);
             }
         }
     }
@@ -1009,29 +1009,29 @@ void DesktopView::rowsInserted(const QModelIndex &parent, int start, int end)
     viewport()->update();
 }
 
-void DesktopView::rowsAboutToBeRemoved(const QModelIndex &parent, int start, int end)
+void IconView::rowsAboutToBeRemoved(const QModelIndex &parent, int start, int end)
 {
     Q_UNUSED(end)
     auto indexAboutToBeRemoved = model()->index(start, 0);
 
-    m_itemsPosesCached.remove(getIndexUri(indexAboutToBeRemoved));
-    m_items.removeOne(getIndexUri(indexAboutToBeRemoved));
-    m_floatItems.removeOne(getIndexUri(indexAboutToBeRemoved));
-    for (auto screen : m_screens) {
+    mItemsPosesCached.remove(getIndexUri(indexAboutToBeRemoved));
+    mItems.removeOne(getIndexUri(indexAboutToBeRemoved));
+    mFloatItems.removeOne(getIndexUri(indexAboutToBeRemoved));
+    for (auto screen : mScreens) {
         screen->makeItemGridPosInvalid(getIndexUri(indexAboutToBeRemoved));
     }
 
     // 重排浮动元素
-    relayoutItems(m_floatItems);
+    relayoutItems(mFloatItems);
 
     viewport()->update();
 }
 
-void DesktopView::saveItemsPositions()
+void IconView::saveItemsPositions()
 {
     //非越界元素的确认，越界元素不应该保存位置
     QStringList itemOnAllScreen;
-    for (auto screen : m_screens) {
+    for (auto screen : mScreens) {
         itemOnAllScreen << screen->getItemsVisibleOnScreen();
     }
 
@@ -1040,9 +1040,9 @@ void DesktopView::saveItemsPositions()
         bool isOverlapped = isItemOverlapped(item);
         if (!isOverlapped) {
             //从浮动元素中排除
-            m_floatItems.removeOne(item);
+            mFloatItems.removeOne(item);
 
-            for (auto s : m_screens) {
+            for (auto s : mScreens) {
                 s->makeItemGridPosInvalid(item);
                 s->makeItemMetaPosInvalid(item);
             }
@@ -1052,7 +1052,7 @@ void DesktopView::saveItemsPositions()
             if (screen) {
                 QPoint gridPos = screen->itemGridPos(item);
                 if (INVALID_POS != gridPos) {
-                    m_itemsPosesCached.remove(item);
+                    mItemsPosesCached.remove(item);
                     screen->saveItemWithGlobalPos(item, gridPos);
                 }
             }
@@ -1060,7 +1060,7 @@ void DesktopView::saveItemsPositions()
     }
 }
 
-void DesktopView::handleScreenChanged(GScreen *screen)
+void IconView::handleScreenChanged(GScreen *screen)
 {
     QList<QPair<QString, QPoint>> items = screen->getItemsAndPosAll();
 
@@ -1073,7 +1073,7 @@ void DesktopView::handleScreenChanged(GScreen *screen)
         bool success = false;
         QString uri = it.first;
         QPoint pos = it.second;
-        m_itemsPosesCached.remove(uri);
+        mItemsPosesCached.remove(uri);
         if (screen->posIsOnScreen(pos)) {
             screen->saveItemWithGlobalPos(uri, pos);
             continue;
@@ -1095,7 +1095,7 @@ void DesktopView::handleScreenChanged(GScreen *screen)
 
         // 放置到其它屏幕
         if(!allFull) {
-            for (auto s : m_screens) {
+            for (auto s : mScreens) {
                 if (s != screen) {
                     p = s->putIconOnScreen(uri, p);
                     if (INVALID_POS != p) {
@@ -1110,7 +1110,7 @@ void DesktopView::handleScreenChanged(GScreen *screen)
 
         // 所有屏幕没有合适位置放主屏
         if (!success) {
-            m_primaryScreen->putIconOnScreen(uri, QPoint(0, 0), true);
+            mPrimaryScreen->putIconOnScreen(uri, QPoint(0, 0), true);
             screen->saveItemWithGlobalPos(uri, p);
         }
     }
@@ -1119,10 +1119,10 @@ void DesktopView::handleScreenChanged(GScreen *screen)
     viewport()->update();
 }
 
-void DesktopView::handleGridSizeChanged()
+void IconView::handleGridSizeChanged()
 {
     // 保持index相对的grid位置不变，对越界图标进行处理
-    for (auto screen : m_screens) {
+    for (auto screen : mScreens) {
         screen->onScreenGridSizeChanged(getGridSize());
         // 更新屏幕内图标的位置
 
@@ -1134,11 +1134,11 @@ void DesktopView::handleGridSizeChanged()
     viewport()->update();
 }
 
-void DesktopView::relayoutItems(const QStringList &uris)
+void IconView::relayoutItems(const QStringList &uris)
 {
     for (auto uri : uris) {
-        m_itemsPosesCached.remove(uri);
-        for (auto screen : m_screens) {
+        mItemsPosesCached.remove(uri);
+        for (auto screen : mScreens) {
             if (screen->isValidScreen()) {
                 screen->makeItemGridPosInvalid(uri);
                 screen->makeItemMetaPosInvalid(uri);
@@ -1148,7 +1148,7 @@ void DesktopView::relayoutItems(const QStringList &uris)
 
     bool success = false;
     for (auto uri : uris) {
-        for (auto screen : m_screens) {
+        for (auto screen : mScreens) {
             QPoint pos = screen->putIconOnScreen(uri);
             if (INVALID_POS != pos) {
                 success = true;
@@ -1159,14 +1159,14 @@ void DesktopView::relayoutItems(const QStringList &uris)
 
         if (!success) {
             // 可以优化，明确主屏已满情况下，可以直接放到 QPoint(0, 0); 另加 api
-            m_primaryScreen->putIconOnScreen(uri, QPoint(0, 0), true);
+            mPrimaryScreen->putIconOnScreen(uri, QPoint(0, 0), true);
         }
     }
 }
 
-GScreen *DesktopView::getItemScreen(const QString &uri)
+GScreen *IconView::getItemScreen(const QString &uri)
 {
-    for (auto screen : m_screens) {
+    for (auto screen : mScreens) {
         if (screen->isValidScreen()) {
             if (screen->uriIsOnScreen(uri)) {
                 return screen;

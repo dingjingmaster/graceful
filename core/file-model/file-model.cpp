@@ -1,4 +1,4 @@
-#include "desktopfile-model.h"
+#include "file-model.h"
 #include <QtCore/private/qobject_p.h>
 
 #include <QSize>
@@ -11,17 +11,17 @@
 
 #include "file/file-enumerator.h"
 
-graceful::DesktopFileModel::DesktopFileModel(QObject *parent) : QAbstractItemModel(parent)
+graceful::FileModel::FileModel(QObject *parent) : QAbstractItemModel(parent)
 {
 
 }
 
-graceful::DesktopFileModel::~DesktopFileModel()
+graceful::FileModel::~FileModel()
 {
 
 }
 
-void graceful::DesktopFileModel::setRootPath(QString rootPath)
+void graceful::FileModel::setRootPath(QString rootPath)
 {
     // file exists?
     if (rootPath.isEmpty()) {
@@ -52,12 +52,12 @@ void graceful::DesktopFileModel::setRootPath(QString rootPath)
     });
 }
 
-void graceful::DesktopFileModel::fetchMore(const QModelIndex &parent)
+void graceful::FileModel::fetchMore(const QModelIndex &parent)
 {
     Q_UNUSED(parent)
 }
 
-bool graceful::DesktopFileModel::canFetchMore(const QModelIndex &parent) const
+bool graceful::FileModel::canFetchMore(const QModelIndex &parent) const
 {
     if (!mCurrentPath || !mCurrentPath->isValid()) {
         return false;
@@ -67,7 +67,7 @@ bool graceful::DesktopFileModel::canFetchMore(const QModelIndex &parent) const
     Q_UNUSED(parent)
 }
 
-Qt::ItemFlags graceful::DesktopFileModel::flags(const QModelIndex &index) const
+Qt::ItemFlags graceful::FileModel::flags(const QModelIndex &index) const
 {
     Qt::ItemFlags flags;
     if(index.isValid()) {
@@ -81,12 +81,12 @@ Qt::ItemFlags graceful::DesktopFileModel::flags(const QModelIndex &index) const
     return flags;
 }
 
-//bool graceful::DesktopFileModel::hasChildren(const QModelIndex &parent) const
+//bool graceful::FileModel::hasChildren(const QModelIndex &parent) const
 //{
 //    return false;
 //}
 
-//bool graceful::DesktopFileModel::insertRows(int row, int count, const QModelIndex &parent)
+//bool graceful::FileModel::insertRows(int row, int count, const QModelIndex &parent)
 //{
 //    qDebug() << __FUNCTION__ << __LINE__;
 //    if (row < 0 || count < 1 || row > rowCount(parent)) {
@@ -96,7 +96,7 @@ Qt::ItemFlags graceful::DesktopFileModel::flags(const QModelIndex &index) const
 //    beginInsertRows(QModelIndex(), row, row + count - 1);
 
 //    for (int r = 0; r < count; ++r) {
-//        mItems.append(new DesktopFileModelItem(QString("test")));
+//        mItems.append(new FileModelItem(QString("test")));
 //    }
 
 //    endInsertRows();
@@ -104,7 +104,7 @@ Qt::ItemFlags graceful::DesktopFileModel::flags(const QModelIndex &index) const
 //    return true;
 //}
 
-//bool graceful::DesktopFileModel::insertColumns(int column, int count, const QModelIndex &parent)
+//bool graceful::FileModel::insertColumns(int column, int count, const QModelIndex &parent)
 //{
 //    qDebug() << __FUNCTION__ << __LINE__;
 //    return false;
@@ -113,7 +113,7 @@ Qt::ItemFlags graceful::DesktopFileModel::flags(const QModelIndex &index) const
 //    Q_UNUSED(parent)
 //}
 
-//QMap<int, QVariant> graceful::DesktopFileModel::itemData(const QModelIndex& index) const
+//QMap<int, QVariant> graceful::FileModel::itemData(const QModelIndex& index) const
 //{
 //    qDebug() << __FUNCTION__ << __LINE__;
 //    if (!checkIndex(index, CheckIndexOption::IndexIsValid | CheckIndexOption::ParentIsInvalid)) {
@@ -129,13 +129,13 @@ Qt::ItemFlags graceful::DesktopFileModel::flags(const QModelIndex &index) const
 //    return QMap<int, QVariant>();
 //}
 
-QVariant graceful::DesktopFileModel::data(const QModelIndex &index, int role) const
+QVariant graceful::FileModel::data(const QModelIndex &index, int role) const
 {
     if (!index.isValid() || index.row() > mItems.size() || index.column() >= NumOfColumns) {
         return QVariant();
     }
 
-    DesktopFileModelItem* item = reinterpret_cast<DesktopFileModelItem*>(index.internalPointer());
+    FileModelItem* item = reinterpret_cast<FileModelItem*>(index.internalPointer());
 
     switch(role) {
     case Qt::ToolTipRole:
@@ -181,7 +181,7 @@ QVariant graceful::DesktopFileModel::data(const QModelIndex &index, int role) co
     return QVariant();
 }
 
-QModelIndex graceful::DesktopFileModel::index(int row, int column, const QModelIndex &parent) const
+QModelIndex graceful::FileModel::index(int row, int column, const QModelIndex &parent) const
 {
     qDebug() << __FUNCTION__ << __LINE__ << "  index";
     if(row < 0 || row >= mItems.size() || column < 0 || column >= NumOfColumns) {
@@ -189,12 +189,12 @@ QModelIndex graceful::DesktopFileModel::index(int row, int column, const QModelI
     }
     qDebug() << __FUNCTION__ << __LINE__ << "  index";
 
-    const DesktopFileModelItem* item = mItems.at(row);
+    const FileModelItem* item = mItems.at(row);
 
     return createIndex(row, column, (void*)item);
 }
 
-QVariant graceful::DesktopFileModel::headerData(int section, Qt::Orientation orientation, int role) const
+QVariant graceful::FileModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
     if(role == Qt::DisplayRole) {
         if(orientation == Qt::Horizontal) {
@@ -231,13 +231,13 @@ QVariant graceful::DesktopFileModel::headerData(int section, Qt::Orientation ori
     return QVariant();
 }
 
-//QModelIndexList graceful::DesktopFileModel::match(const QModelIndex &start, int role, const QVariant &value, int hits, Qt::MatchFlags flags) const
+//QModelIndexList graceful::FileModel::match(const QModelIndex &start, int role, const QVariant &value, int hits, Qt::MatchFlags flags) const
 //{
 //    qDebug() << __FUNCTION__ << __LINE__;
 //    return QAbstractItemModel::match(start, role, value, hits, flags);
 //}
 
-QStringList graceful::DesktopFileModel::mimeTypes() const
+QStringList graceful::FileModel::mimeTypes() const
 {
     qDebug() << __FUNCTION__ << __LINE__;
     QStringList types = QAbstractItemModel::mimeTypes();
@@ -248,7 +248,7 @@ QStringList graceful::DesktopFileModel::mimeTypes() const
     return types;
 }
 
-QMimeData *graceful::DesktopFileModel::mimeData(const QModelIndexList &indexes) const
+QMimeData *graceful::FileModel::mimeData(const QModelIndexList &indexes) const
 {
     qDebug() << __FUNCTION__ << __LINE__;
     QMimeData* data = QAbstractItemModel::mimeData(indexes);
@@ -257,7 +257,7 @@ QMimeData *graceful::DesktopFileModel::mimeData(const QModelIndexList &indexes) 
     libfmUrilist.reserve(4096);
 
     for(const auto& index : indexes) {
-        DesktopFileModelItem* item = reinterpret_cast<DesktopFileModelItem*>(index.internalPointer());
+        FileModelItem* item = reinterpret_cast<FileModelItem*>(index.internalPointer());
 //        if(item && item->mInfo) {
 //            auto path = item->mInfo->path();
 //            if(path.isValid()) {
@@ -281,19 +281,19 @@ QMimeData *graceful::DesktopFileModel::mimeData(const QModelIndexList &indexes) 
     return QAbstractItemModel::mimeData(indexes);
 }
 
-//bool graceful::DesktopFileModel::moveRows(const QModelIndex &sourceParent, int sourceRow, int count, const QModelIndex &destinationParent, int destinationChild)
+//bool graceful::FileModel::moveRows(const QModelIndex &sourceParent, int sourceRow, int count, const QModelIndex &destinationParent, int destinationChild)
 //{
 //    qDebug() << __FUNCTION__ << __LINE__;
 //    return false;
 //}
 
-//bool graceful::DesktopFileModel::moveColumns(const QModelIndex &sourceParent, int sourceColumn, int count, const QModelIndex &destinationParent, int destinationChild)
+//bool graceful::FileModel::moveColumns(const QModelIndex &sourceParent, int sourceColumn, int count, const QModelIndex &destinationParent, int destinationChild)
 //{
 //    qDebug() << __FUNCTION__ << __LINE__;
 //    return false;
 //}
 
-QModelIndex graceful::DesktopFileModel::parent(const QModelIndex &index) const
+QModelIndex graceful::FileModel::parent(const QModelIndex &index) const
 {
     qDebug() << __FUNCTION__ << __LINE__;
 
@@ -303,12 +303,12 @@ QModelIndex graceful::DesktopFileModel::parent(const QModelIndex &index) const
 
     qDebug() << __FUNCTION__ << " --- " << index.row() << "  --  " << index.column();
 
-    const DesktopFileModelItem* item = mItems.at(index.row());
+    const FileModelItem* item = mItems.at(index.row());
 
     return createIndex(index.row(), index.column(), (void*)&item);
 }
 
-int graceful::DesktopFileModel::rowCount(const QModelIndex &parent) const
+int graceful::FileModel::rowCount(const QModelIndex &parent) const
 {
     qDebug() << __FUNCTION__ << __LINE__ << " -- " << mItems.size();
     if (parent.isValid()) {
@@ -319,7 +319,7 @@ int graceful::DesktopFileModel::rowCount(const QModelIndex &parent) const
     return mItems.size();
 }
 
-int graceful::DesktopFileModel::columnCount(const QModelIndex &parent) const
+int graceful::FileModel::columnCount(const QModelIndex &parent) const
 {
     qDebug() << __FUNCTION__ << __LINE__;
     if (parent.isValid()) {
@@ -329,7 +329,7 @@ int graceful::DesktopFileModel::columnCount(const QModelIndex &parent) const
     return NumOfColumns;
 }
 
-bool graceful::DesktopFileModel::removeRows(int row, int count, const QModelIndex& parent)
+bool graceful::FileModel::removeRows(int row, int count, const QModelIndex& parent)
 {
     qDebug() << __FUNCTION__ << __LINE__;
     return true;
@@ -339,7 +339,7 @@ bool graceful::DesktopFileModel::removeRows(int row, int count, const QModelInde
     Q_UNUSED(parent)
 }
 
-bool graceful::DesktopFileModel::removeColumns(int column, int count, const QModelIndex &parent)
+bool graceful::FileModel::removeColumns(int column, int count, const QModelIndex &parent)
 {
     qDebug() << __FUNCTION__ << __LINE__;
     return false;
@@ -348,7 +348,7 @@ bool graceful::DesktopFileModel::removeColumns(int column, int count, const QMod
     Q_UNUSED(column)
 }
 
-bool graceful::DesktopFileModel::setItemData(const QModelIndex &index, const QMap<int, QVariant> &roles)
+bool graceful::FileModel::setItemData(const QModelIndex &index, const QMap<int, QVariant> &roles)
 {
     qDebug() << __FUNCTION__ << __LINE__;
     return false;
@@ -356,7 +356,7 @@ bool graceful::DesktopFileModel::setItemData(const QModelIndex &index, const QMa
     Q_UNUSED(roles)
 }
 
-bool graceful::DesktopFileModel::setData(const QModelIndex &index, const QVariant &value, int role)
+bool graceful::FileModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
     qDebug() << __FUNCTION__ << __LINE__;
     if (index.row() >= 0 && index.row() < mItems.size() && (role == Qt::EditRole || role == Qt::DisplayRole)) {
@@ -371,25 +371,25 @@ bool graceful::DesktopFileModel::setData(const QModelIndex &index, const QVarian
     return false;
 }
 
-bool graceful::DesktopFileModel::setHeaderData(int section, Qt::Orientation orientation, const QVariant &value, int role)
+bool graceful::FileModel::setHeaderData(int section, Qt::Orientation orientation, const QVariant &value, int role)
 {
     qDebug() << __FUNCTION__ << __LINE__;
     return false;
 }
 
-//QSize graceful::DesktopFileModel::span(const QModelIndex &index) const
+//QSize graceful::FileModel::span(const QModelIndex &index) const
 //{
 //    qDebug() << __FUNCTION__ << __LINE__;
 //    return QSize(1, 1);
 //}
 
-void graceful::DesktopFileModel::sort(int column, Qt::SortOrder order)
+void graceful::FileModel::sort(int column, Qt::SortOrder order)
 {
     qDebug() << __FUNCTION__ << __LINE__;
     QAbstractItemModel::sort(column, order);
 }
 
-QModelIndex graceful::DesktopFileModel::sibling(int row, int column, const QModelIndex &index) const
+QModelIndex graceful::FileModel::sibling(int row, int column, const QModelIndex &index) const
 {
     qDebug() << __FUNCTION__ << __LINE__;
     if (row == index.row() && column < NumOfColumns) {
@@ -399,31 +399,31 @@ QModelIndex graceful::DesktopFileModel::sibling(int row, int column, const QMode
     }
 }
 
-Qt::DropActions graceful::DesktopFileModel::supportedDragActions() const
+Qt::DropActions graceful::FileModel::supportedDragActions() const
 {
     qDebug() << __FUNCTION__ << __LINE__;
     return Qt::CopyAction;
 }
 
-Qt::DropActions graceful::DesktopFileModel::supportedDropActions() const
+Qt::DropActions graceful::FileModel::supportedDropActions() const
 {
     qDebug() << __FUNCTION__ << __LINE__;
     return QAbstractItemModel::supportedDropActions() | Qt::MoveAction;
 }
 
-bool graceful::DesktopFileModel::dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent)
+bool graceful::FileModel::dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent)
 {
     qDebug() << __FUNCTION__ << __LINE__;
     return QAbstractItemModel::dropMimeData(data, action, row, column, parent);
 }
 
-bool graceful::DesktopFileModel::canDropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent) const
+bool graceful::FileModel::canDropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent) const
 {
     qDebug() << __FUNCTION__ << __LINE__;
     return QAbstractItemModel::canDropMimeData(data, action, row, column, parent);
 }
 
-void graceful::DesktopFileModel::removeAll()
+void graceful::FileModel::removeAll()
 {
     qDebug() << __FUNCTION__ << __LINE__;
     if (mItems.empty()) {
@@ -438,14 +438,14 @@ void graceful::DesktopFileModel::removeAll()
     endRemoveRows();
 }
 
-void graceful::DesktopFileModel::insertFiles(int row, const QStringList &files)
+void graceful::FileModel::insertFiles(int row, const QStringList &files)
 {
     qDebug() << __FUNCTION__ << __LINE__;
     int filesNum = files.size();
 
     beginInsertRows(QModelIndex(), row, row + filesNum - 1);
     for (QString f : files) {
-        DesktopFileModelItem* item = new DesktopFileModelItem(f);
+        FileModelItem* item = new FileModelItem(f);
         mItems.append(item);
         qDebug() << "insert:" << f;
     }
@@ -453,37 +453,37 @@ void graceful::DesktopFileModel::insertFiles(int row, const QStringList &files)
 }
 
 
-graceful::DesktopFileModelItem::DesktopFileModelItem(QString uri)
+graceful::FileModelItem::FileModelItem(QString uri)
 {
     mFile = new File(uri);
 }
 
-graceful::DesktopFileModelItem::DesktopFileModelItem(DesktopFileModelItem &other)
+graceful::FileModelItem::FileModelItem(FileModelItem &other)
 {
     mFile = new File(other.mFile->uri());
 }
 
-QString graceful::DesktopFileModelItem::name() const
+QString graceful::FileModelItem::name() const
 {
     return mFile->fileName();
 }
 
-QString graceful::DesktopFileModelItem::uri() const
+QString graceful::FileModelItem::uri() const
 {
     return mFile->uri();
 }
 
-QString graceful::DesktopFileModelItem::path() const
+QString graceful::FileModelItem::path() const
 {
     return mFile->path();
 }
 
-QIcon graceful::DesktopFileModelItem::icon() const
+QIcon graceful::FileModelItem::icon() const
 {
     return mFile->icon();
 }
 
-QString graceful::DesktopFileModelItem::iconName() const
+QString graceful::FileModelItem::iconName() const
 {
     return mFile->iconName();
 }

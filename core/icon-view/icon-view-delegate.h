@@ -1,5 +1,5 @@
-#ifndef DesktopViewDELEGATE_H
-#define DesktopViewDELEGATE_H
+#ifndef ICONVIEWDELEGATE_H
+#define ICONVIEWDELEGATE_H
 
 #include <QStyledItemDelegate>
 
@@ -8,21 +8,21 @@ class QPushButton;
 namespace graceful
 {
 
-class DesktopView;
+class IconView;
 
-class DesktopViewDelegate : public QStyledItemDelegate
+class IconViewDelegate : public QStyledItemDelegate
 {
     Q_OBJECT
 public:
     using QStyledItemDelegate::QStyledItemDelegate;
 
-    explicit DesktopViewDelegate(QObject *parent = nullptr);
-    ~DesktopViewDelegate() override;
+    explicit IconViewDelegate(QObject *parent = nullptr);
+    ~IconViewDelegate() override;
 
     void initStyleOption(QStyleOptionViewItem *option, const QModelIndex &index) const override;
     QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const override;
 
-    DesktopView *getView() const;
+    IconView* getView() const;
 
 protected:
     void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
@@ -32,8 +32,8 @@ protected:
     QWidget* createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
 
 private:
-    QPushButton *m_styled_button;
+    QPushButton*        mStyledButton;
 };
 }
 
-#endif // DesktopViewDELEGATE_H
+#endif // IconViewDelegate_H

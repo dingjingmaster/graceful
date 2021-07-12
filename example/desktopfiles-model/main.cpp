@@ -3,8 +3,8 @@
 #include <QMainWindow>
 
 #include <QFileSystemModel>
-#include "desktop-view/desktop-view.h"
-#include "desktop-model/desktopfile-model.h"
+#include "icon-view/icon-view.h"
+#include "file-model/file-model.h"
 
 int main (int argc, char* argv[])
 {
@@ -14,12 +14,12 @@ int main (int argc, char* argv[])
 
     QWidget* mainWindow = new QWidget;
     mainWindow->setFixedSize(900, 900);
-    DesktopView* view = new DesktopView(mainWindow);
+    IconView* view = new IconView(mainWindow);
 
 #if 1
-    DesktopFileModel* desktopFileModel = new DesktopFileModel;
-    desktopFileModel->setRootPath(QDir::currentPath());
-    view->setModel(desktopFileModel);
+    FileModel* fileModel = new FileModel;
+    fileModel->setRootPath(QDir::currentPath());
+    view->setModel(fileModel);
 #else
     QFileSystemModel* model = new QFileSystemModel;
     model->setRootPath(QDir::currentPath());

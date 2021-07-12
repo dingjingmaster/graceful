@@ -1,7 +1,7 @@
-#include "desktop-view-delegate.h"
+#include "icon-view-delegate.h"
 
 #include "file/file.h"
-#include "desktop-view.h"
+#include "icon-view.h"
 #include "utils/icon-view-editor.h"
 #include "utils/icon-view-text-helper.h"
 
@@ -24,17 +24,17 @@ extern void qt_blurImage(QImage &blurImage, qreal radius, bool quality, int tran
 
 using namespace graceful;
 
-DesktopViewDelegate::DesktopViewDelegate(QObject *parent) : QStyledItemDelegate(parent)
+IconViewDelegate::IconViewDelegate(QObject *parent) : QStyledItemDelegate(parent)
 {
-    m_styled_button = new QPushButton;
+    mStyledButton = new QPushButton;
 }
 
-DesktopViewDelegate::~DesktopViewDelegate()
+IconViewDelegate::~IconViewDelegate()
 {
-    m_styled_button->deleteLater();
+    mStyledButton->deleteLater();
 }
 
-void DesktopViewDelegate::initStyleOption(QStyleOptionViewItem* option, const QModelIndex& index) const
+void IconViewDelegate::initStyleOption(QStyleOptionViewItem* option, const QModelIndex& index) const
 {
     QVariant value = index.data(Qt::FontRole);
     if (value.isValid() && !value.isNull()) {
@@ -63,7 +63,7 @@ void DesktopViewDelegate::initStyleOption(QStyleOptionViewItem* option, const QM
     option->styleObject = nullptr;
 }
 
-void DesktopViewDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
+void IconViewDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
     QStyleOptionViewItem opt = option;
     initStyleOption(&opt, index);
@@ -72,7 +72,7 @@ void DesktopViewDelegate::paint(QPainter *painter, const QStyleOptionViewItem &o
     painter->save();
     auto view = getView();
 
-    if (view->state() == DesktopView::DraggingState) {
+    if (view->state() == IconView::DraggingState) {
         if (auto widget = view->indexWidget(index)) {
             view->setIndexWidget(index, nullptr);
         }
@@ -92,7 +92,7 @@ void DesktopViewDelegate::paint(QPainter *painter, const QStyleOptionViewItem &o
         painter->setClipRect(opt.rect);
         painter->setRenderHint(QPainter::Antialiasing);
         if (opt.state.testFlag(QStyle::State_MouseOver) && !opt.state.testFlag(QStyle::State_Selected)) {
-            QColor color = m_styled_button->palette().highlight().color();
+            QColor color = mStyledButton->palette().highlight().color();
             color.setAlpha(255 * 0.3);
             color.setAlpha(255 * 0.5);
             painter->setPen(color.darker(100));
@@ -100,7 +100,7 @@ void DesktopViewDelegate::paint(QPainter *painter, const QStyleOptionViewItem &o
             painter->drawRoundedRect(opt.rect.adjusted(1, 1, -1, -1), 6, 6);
         }
         if (opt.state.testFlag(QStyle::State_Selected)) {
-            QColor color = m_styled_button->palette().highlight().color();
+            QColor color = mStyledButton->palette().highlight().color();
             color.setAlpha(255 * 0.7);
             color.setAlpha(255 * 0.8);
             painter->setPen(color);
@@ -192,20 +192,20 @@ void DesktopViewDelegate::paint(QPainter *painter, const QStyleOptionViewItem &o
         QSize lockerIconSize = QSize(16, 16);
         int offset = 8;
         switch (view->zoomLevel()) {
-        case DesktopView::Small: {
+        case IconView::Small: {
             lockerIconSize = QSize(8, 8);
             offset = 10;
             break;
         }
-        case DesktopView::Normal: {
+        case IconView::Normal: {
             break;
         }
-        case DesktopView::Large: {
+        case IconView::Large: {
             offset = 4;
             lockerIconSize = QSize(24, 24);
             break;
         }
-        case DesktopView::Huge: {
+        case IconView::Huge: {
             offset = 2;
             lockerIconSize = QSize(32, 32);
             break;
@@ -223,20 +223,20 @@ void DesktopViewDelegate::paint(QPainter *painter, const QStyleOptionViewItem &o
         QSize symbolicIconSize = QSize(16, 16);
         int offset = 8;
         switch (view->zoomLevel()) {
-        case DesktopView::Small: {
+        case IconView::Small: {
             symbolicIconSize = QSize(8, 8);
             offset = 10;
             break;
         }
-        case DesktopView::Normal: {
+        case IconView::Normal: {
             break;
         }
-        case DesktopView::Large: {
+        case IconView::Large: {
             offset = 4;
             symbolicIconSize = QSize(24, 24);
             break;
         }
-        case DesktopView::Huge: {
+        case IconView::Huge: {
             offset = 2;
             symbolicIconSize = QSize(32, 32);
             break;
@@ -256,37 +256,37 @@ void DesktopViewDelegate::paint(QPainter *painter, const QStyleOptionViewItem &o
     painter->restore();
 }
 
-QSize DesktopViewDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const
+QSize IconViewDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
-    auto view = qobject_cast<DesktopView*>(parent());
+    auto view = qobject_cast<IconView*>(parent());
     auto zoomLevel = view->zoomLevel();
     switch (zoomLevel) {
-    case DesktopView::Small:
+    case IconView::Small:
         return QSize(60, 70);
-    case DesktopView::Normal:
+    case IconView::Normal:
         return QSize(90, 100);
-    case DesktopView::Large:
+    case IconView::Large:
         return QSize(105, 128);
-    case DesktopView::Huge:
+    case IconView::Huge:
         return QSize(120, 150);
     default:
         return QSize(90, 100);
     }
 }
 
-QWidget *DesktopViewDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const
+QWidget *IconViewDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
     auto edit = new IconViewEditor(parent);
     auto font = option.font;
-    auto view = qobject_cast<DesktopView*>(this->parent());
+    auto view = qobject_cast<IconView*>(this->parent());
     switch (view->zoomLevel()) {
-    case DesktopView::Small:
+    case IconView::Small:
         font.setPixelSize(int(font.pixelSize() * 0.8));
         break;
-    case DesktopView::Large:
+    case IconView::Large:
         font.setPixelSize(int(font.pixelSize() * 1.2));
         break;
-    case DesktopView::Huge:
+    case IconView::Huge:
         font.setPixelSize(int(font.pixelSize() * 1.4));
         break;
     default:
@@ -318,7 +318,7 @@ QWidget *DesktopViewDelegate::createEditor(QWidget *parent, const QStyleOptionVi
     return edit;
 }
 
-void DesktopViewDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const
+void IconViewDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const
 {
     IconViewEditor *edit = qobject_cast<IconViewEditor*>(editor);
     if (!edit)
@@ -336,7 +336,7 @@ void DesktopViewDelegate::setEditorData(QWidget *editor, const QModelIndex &inde
     Q_UNUSED(index)
 }
 
-void DesktopViewDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const
+void IconViewDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const
 {
     IconViewEditor *edit = qobject_cast<IconViewEditor*>(editor);
     if (!edit)
@@ -355,9 +355,9 @@ void DesktopViewDelegate::setModelData(QWidget *editor, QAbstractItemModel *mode
     }
 }
 
-DesktopView *DesktopViewDelegate::getView() const
+IconView* IconViewDelegate::getView() const
 {
-    auto view = qobject_cast<DesktopView*>(parent());
+    auto view = qobject_cast<IconView*>(parent());
     return view;
 }
 

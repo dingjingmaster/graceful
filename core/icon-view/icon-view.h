@@ -1,7 +1,7 @@
-#ifndef DesktopView2_H
-#define DesktopView2_H
+#ifndef ICONVIEW_H
+#define ICONVIEW_H
 
-#include "screen.h"
+#include "gscreen.h"
 
 #include <QMap>
 #include <QTimer>
@@ -12,13 +12,13 @@ class QRubberBand;
 
 namespace graceful
 {
-class DesktopFileModel;
+class FileModel;
 
-class DesktopView : public QAbstractItemView
+class IconView : public QAbstractItemView
 {
     friend class GScreen;
-    friend class DesktopItemModel;
-    friend class DesktopViewDelegate;
+    friend class FileModel;
+    friend class IconViewDelegate;
     Q_OBJECT
 public:
     enum ZoomLevel
@@ -31,7 +31,7 @@ public:
     };
     Q_ENUM(ZoomLevel)
 
-    explicit DesktopView(QWidget *parent = nullptr);
+    explicit IconView(QWidget *parent = nullptr);
 
     void setGridSize(QSize size);
     GScreen* getScreen(int screenId);
@@ -125,42 +125,42 @@ protected Q_SLOTS:
     GScreen* getItemScreen(const QString &uri);
 
 private:
-    bool                                m_is_edit = false;
-    bool                                m_is_renaming = false;
-    bool                                m_show_hidden = false;
-    bool                                m_real_do_edit = false;
-    bool                                m_ctrl_key_pressed = false;
-    bool                                m_ctrl_or_shift_pressed = false;
+    bool                                mIsEdit = false;
+    bool                                mIsRenaming = false;
+    bool                                mShowHidden = false;
+    bool                                mRealDoEdit = false;
+    bool                                mCtrlKeyPressed = false;
+    bool                                mCtrlOrShiftPressed = false;
 
-    bool                                m_select_flag = false;
-    bool                                m_drag_flag = false;
+    bool                                mSelectFlag = false;
+    bool                                mDragFlag = false;
 
-    QModelIndex                         m_hover_index;
-    QModelIndex                         m_editing_index;
+    QModelIndex                         mHoverIndex;
+    QModelIndex                         mEditingIndex;
 
 
-    QModelIndex                         m_last_index;
-    QModelIndexList                     m_drag_indexes;
+    QModelIndex                         mLastIndex;
+    QModelIndexList                     mDragIndexes;
 
-    ZoomLevel                           m_zoom_level = Invalid;
-    QSize                               m_gridSize = QSize(100, 150);
-    DesktopFileModel*                   m_model;
-    QList <GScreen*>                    m_screens;
-    GScreen*                            m_primaryScreen;
+    ZoomLevel                           mZoomLevel = Invalid;
+    QSize                               mGridSize = QSize(100, 150);
+    FileModel*                          mModel;
+    QList <GScreen*>                    mScreens;
+    GScreen*                            mPrimaryScreen;
 
-    QStringList                         m_items;                        // 所有桌面图标 uri
-    QStringList                         m_floatItems;                   // 当有拖拽或者libpeony文件操作触发时，固定所有float元素并记录metaInfo
-    QMap<QString, QPoint>               m_itemsPosesCached;             //
+    QStringList                         mItems;                         // 所有桌面图标 uri
+    QStringList                         mFloatItems;                    // 当有拖拽或者libpeony文件操作触发时，固定所有float元素并记录metaInfo
+    QMap<QString, QPoint>               mItemsPosesCached;              //
 
-    QQueue<QString>                     m_tobeRendered;                 // 将要重新绘制的图标
+    QQueue<QString>                     mTobeRendered;                  // 将要重新绘制的图标
 
-    QPoint                              m_press_pos;
-    QPoint                              m_dragStartPos;
-    QRubberBand*                        m_rubberBand = nullptr;
+    QPoint                              mPressPos;
+    QPoint                              mDragStartPos;
+    QRubberBand*                        mRubberBand = nullptr;
 
-    QTimer                              m_edit_trigger_timer;
+    QTimer                              mEditTriggerTimer;
 };
 
 }
 
-#endif // DesktopView_H
+#endif

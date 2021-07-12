@@ -20,8 +20,8 @@ include($$PWD/utils/utils.pri)
 include($$PWD/power/power.pri)
 include($$PWD/common/common.pri)
 include($$PWD/QHotkey/qhotkey.pri)
-include($$PWD/desktop-view/desktop-view.pri)
-include($$PWD/desktop-model/desktop-model.pri)
+include($$PWD/icon-view/icon-view.pri)
+include($$PWD/file-model/file-model.pri)
 include($$PWD/SingleApplication/singleapplication.pri)
 
 

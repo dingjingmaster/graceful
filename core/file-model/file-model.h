@@ -1,5 +1,5 @@
-#ifndef DESKTOPFILEMODEL_H
-#define DESKTOPFILEMODEL_H
+#ifndef FILEMODEL_H
+#define FILEMODEL_H
 
 #include <QList>
 #include <QString>
@@ -13,11 +13,11 @@ class QAbstractItemModelPrivate;
 namespace graceful
 {
 
-class GRACEFUL_API DesktopFileModelItem
+class GRACEFUL_API FileModelItem
 {
 public:
-    explicit DesktopFileModelItem (QString uri);
-    DesktopFileModelItem(DesktopFileModelItem& other);
+    explicit FileModelItem (QString uri);
+    FileModelItem(FileModelItem& other);
 
     QString name() const;
     QString uri() const;
@@ -31,7 +31,7 @@ private:
 };
 
 
-class GRACEFUL_API DesktopFileModel : public QAbstractItemModel
+class GRACEFUL_API FileModel : public QAbstractItemModel
 {
     Q_OBJECT
 public:
@@ -55,8 +55,8 @@ public:
         NumOfColumns
     };
 
-    explicit DesktopFileModel(QObject* parent = nullptr);
-    ~DesktopFileModel() override;
+    explicit FileModel(QObject* parent = nullptr);
+    ~FileModel() override;
 
     // specific api
     void setRootPath(QString rootPath);
@@ -142,11 +142,11 @@ Q_SIGNALS:
 
 private:
     File*                                           mCurrentPath = nullptr;
-    QList<DesktopFileModelItem*>                    mItems;
+    QList<FileModelItem*>                           mItems;
 
-    Q_DISABLE_COPY(DesktopFileModel)
+    Q_DISABLE_COPY(FileModel)
 };
 }
 
 
-#endif // DESKTOPFILEMODEL_H
+#endif // FileModel_H

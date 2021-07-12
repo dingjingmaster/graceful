@@ -1,8 +1,8 @@
 #include <QDebug>
 #include <QScreen>
 
-#include "screen.h"
-#include "desktop-view.h"
+#include "gscreen.h"
+#include "icon-view.h"
 
 #include <gio/gio.h>
 
@@ -19,14 +19,14 @@ GScreen::GScreen(QScreen *screen, QSize gridSize, QObject *parent) : QObject(par
         return;
     }
 
-    m_screen = screen;
-    m_geometry = screen->geometry();
-    m_geometry.adjust(m_panelMargins.left(), m_panelMargins.top(), -m_panelMargins.right(), -m_panelMargins.bottom());
-    m_gridSize = gridSize;
+    mScreen = screen;
+    mGeometry = screen->geometry();
+    mGeometry.adjust(mPanelMargins.left(), mPanelMargins.top(), -mPanelMargins.right(), -mPanelMargins.bottom());
+    mGridSize = gridSize;
     recalculateGrid();
     connect(screen, &QScreen::geometryChanged, this, &GScreen::onScreenGeometryChanged);
     connect(screen, &QScreen::destroyed, this, [=] () {
-        m_screen = nullptr;
+        mScreen = nullptr;
         Q_EMIT screenVisibleChanged(false);
     });
 
@@ -37,22 +37,22 @@ GScreen::GScreen(QScreen *screen, QSize gridSize, QObject *parent) : QObject(par
 
 bool GScreen::isValidScreen()
 {
-    return m_screen;
+    return mScreen;
 }
 
 int GScreen::maxRow() const
 {
-    return m_maxRow;
+    return mMaxRow;
 }
 
 int GScreen::maxColumn() const
 {
-    return m_maxColumn;
+    return mMaxColumn;
 }
 
 bool GScreen::iconIsConflict(QPoint pos)
 {
-    auto its = m_items.values();
+    auto its = mItems.values();
 
     if (!its.contains(pos)) {
         return false;
@@ -65,14 +65,14 @@ bool GScreen::posIsOnScreen(const QPoint &pos)
 {
     if (!isValidScreen()) return false;
 
-    return m_screen->geometry().contains(pos);
+    return mScreen->geometry().contains(pos);
 }
 
 void GScreen::onScreenGeometryChanged(const QRect &geometry)
 {
     if (!geometry.isEmpty()) {
-        m_geometry = geometry;
-        m_geometry.adjust(m_panelMargins.left(), m_panelMargins.top(), -m_panelMargins.right(), -m_panelMargins.bottom());
+        mGeometry = geometry;
+        mGeometry.adjust(mPanelMargins.left(), mPanelMargins.top(), -mPanelMargins.right(), -mPanelMargins.bottom());
         recalculateGrid();
 
         refresh();
@@ -88,14 +88,14 @@ void GScreen::onScreenGridSizeChanged(const QSize &gridSize)
         return;
     }
 
-    m_gridSize = gridSize;
+    mGridSize = gridSize;
     recalculateGrid();
 }
 
 void GScreen::setPanelMargins(const QMargins &margins)
 {
-    m_panelMargins = margins;
-    m_geometry.adjust(margins.left(), margins.top(), -margins.right(), -margins.bottom());
+    mPanelMargins = margins;
+    mGeometry.adjust(margins.left(), margins.top(), -margins.right(), -margins.bottom());
     recalculateGrid();
 
     getView()->handleScreenChanged(this);
@@ -103,33 +103,33 @@ void GScreen::setPanelMargins(const QMargins &margins)
 
 void GScreen::recalculateGrid()
 {
-    m_maxColumn = m_geometry.width() / m_gridSize.width();
-    m_maxRow = m_geometry.height() / m_gridSize.height();
+    mMaxColumn = mGeometry.width() / mGridSize.width();
+    mMaxRow = mGeometry.height() / mGridSize.height();
 
-    if (m_maxColumn > 0) {
-        m_maxColumn--;
+    if (mMaxColumn > 0) {
+        mMaxColumn--;
     }
 
-    if (m_maxRow > 0) {
-        m_maxRow--;
+    if (mMaxRow > 0) {
+        mMaxRow--;
     }
 }
 
-DesktopView* GScreen::getView()
+IconView* GScreen::getView()
 {
-    return qobject_cast<DesktopView *>(parent());
+    return qobject_cast<IconView *>(parent());
 }
 
 void GScreen::swapScreen(GScreen &screen)
 {
-    QHash<QString, QPoint>  item = m_items;
-    QHash<QString, QPoint>  itemPoss = m_itemsMetaPoses;
+    QHash<QString, QPoint>  item = mItems;
+    QHash<QString, QPoint>  itemPoss = mItemsMetaPoses;
 
-    m_items = screen.m_items;
-    m_itemsMetaPoses = screen.m_itemsMetaPoses;
+    mItems = screen.mItems;
+    mItemsMetaPoses = screen.mItemsMetaPoses;
 
-    screen.m_items = item;
-    screen.m_itemsMetaPoses = itemPoss;
+    screen.mItems = item;
+    screen.mItemsMetaPoses = itemPoss;
 }
 
 QString GScreen::getIndexUri(const QModelIndex &index)
@@ -139,13 +139,13 @@ QString GScreen::getIndexUri(const QModelIndex &index)
 
 void GScreen::clearItems()
 {
-    m_items.clear();
+    mItems.clear();
 }
 
 QPoint GScreen::getMetaPos(const QString& uri)
 {
-    if (m_itemsMetaPoses.contains(uri)) {
-        return m_itemsMetaPoses[uri];
+    if (mItemsMetaPoses.contains(uri)) {
+        return mItemsMetaPoses[uri];
     }
 
     return INVALID_POS;
@@ -153,21 +153,21 @@ QPoint GScreen::getMetaPos(const QString& uri)
 
 QRect GScreen::getGeometry() const
 {
-    return m_geometry;
+    return mGeometry;
 }
 
 QStringList GScreen::getAllItemsOnScreen()
 {
-    return m_items.keys();
+    return mItems.keys();
 }
 
 QStringList GScreen::getItemsOutOfScreen()
 {
     QStringList list;
 
-    for (auto uri : m_items.keys()) {
-        auto gridPos = m_items.value(uri);
-        if (gridPos.x() > m_maxColumn || gridPos.y() > m_maxRow) {
+    for (auto uri : mItems.keys()) {
+        auto gridPos = mItems.value(uri);
+        if (gridPos.x() > mMaxColumn || gridPos.y() > mMaxRow) {
             qDebug() << "屏幕外的 uri:" << uri;
             list << uri;
         }
@@ -184,11 +184,11 @@ QStringList GScreen::getItemsVisibleOnScreen()
 
     QStringList list;
 
-    QStringList uris = m_items.keys();
+    QStringList uris = mItems.keys();
 
     for (auto uri : uris) {
-        auto gridPos = m_items.value(uri);
-        if (gridPos.x() <= m_maxColumn && gridPos.y() <= m_maxRow) {
+        auto gridPos = mItems.value(uri);
+        if (gridPos.x() <= mMaxColumn && gridPos.y() <= mMaxRow) {
             qDebug() << "屏幕上可见的 uri: " << uri;
             list << uri;
         }
@@ -202,7 +202,7 @@ QStringList GScreen::getItemsOverrideOnScreen()
     QStringList list;
     QMap<QString, bool> filter;
 
-    for (auto it = m_items.constBegin(); it != m_items.constEnd(); ++it) {
+    for (auto it = mItems.constBegin(); it != mItems.constEnd(); ++it) {
         QString uri = it.key();
         QPoint pos = it.value();
         QString posStr = QString("%1x%2").arg(pos.x()).arg(pos.y());
@@ -220,7 +220,7 @@ QPoint GScreen::getItemMetaInfoGridPos(const QString &uri)
 {
     QPoint poss = INVALID_POS;
 
-    QPoint pos = m_itemsMetaPoses.value(uri, INVALID_POS);
+    QPoint pos = mItemsMetaPoses.value(uri, INVALID_POS);
     if (INVALID_POS != pos && !iconIsConflict(pos)) {
         poss = pos;
     }
@@ -254,11 +254,11 @@ void GScreen::refresh()
             p = QPoint(0, 0);
         }
 
-        m_items[uri] = p;
+        mItems[uri] = p;
     }
 #if 0
     qDebug() << "DEBUG_REFRESH ------------------ debug refresh ---------------------------";
-    for (auto it = m_items.constBegin(); it != m_items.constEnd(); ++it) {
+    for (auto it = mItems.constBegin(); it != mItems.constEnd(); ++it) {
         qDebug() << it.key() << "  --  " << coordinateLocal2Global(it.value());
     }
     qDebug() << "DEBUG_REFRESH ------------------------------------------------------------";
@@ -269,12 +269,12 @@ QStringList GScreen::getItemsMetaGridPosOutOfScreen()
 {
     QStringList list;
 
-    if (!m_screen)
-        return m_itemsMetaPoses.keys();
+    if (!mScreen)
+        return mItemsMetaPoses.keys();
 
-    for (auto uri : m_itemsMetaPoses.keys()) {
-        auto gridPos = m_itemsMetaPoses.value(uri);
-        if (gridPos.x() > m_maxColumn || gridPos.y() > m_maxRow) {
+    for (auto uri : mItemsMetaPoses.keys()) {
+        auto gridPos = mItemsMetaPoses.value(uri);
+        if (gridPos.x() > mMaxColumn || gridPos.y() > mMaxRow) {
             list << uri;
         }
     }
@@ -286,10 +286,10 @@ QStringList GScreen::getItemMetaGridPosVisibleOnScreen()
 {
     QStringList list;
 
-    if (m_screen) {
-        for (auto uri : m_itemsMetaPoses.keys()) {
-            auto gridPos = m_itemsMetaPoses.value(uri);
-            if (gridPos.x() <= m_maxColumn && gridPos.y() <= m_maxRow && gridPos != INVALID_POS) {
+    if (mScreen) {
+        for (auto uri : mItemsMetaPoses.keys()) {
+            auto gridPos = mItemsMetaPoses.value(uri);
+            if (gridPos.x() <= mMaxColumn && gridPos.y() <= mMaxRow && gridPos != INVALID_POS) {
                 list<<uri;
             }
         }
@@ -300,11 +300,11 @@ QStringList GScreen::getItemMetaGridPosVisibleOnScreen()
 
 QPoint GScreen::getGridCenterPoint(QPoint &pos)
 {
-    if (m_screen->availableGeometry().contains(pos)) {
+    if (mScreen->availableGeometry().contains(pos)) {
         QPoint localPos = coordinateGlobal2Local(pos);
         QPoint globalPos = coordinateLocal2Global(localPos);
 
-        return QPoint(globalPos.x() + m_gridSize.width() / 2, globalPos.y() + m_gridSize.height() / 2);
+        return QPoint(globalPos.x() + mGridSize.width() / 2, globalPos.y() + mGridSize.height() / 2);
     }
 
     return pos;
@@ -314,7 +314,7 @@ QList<QPair<QString, QPoint> > GScreen::getItemsAndPosOutOfScreen()
 {
     QList<QPair<QString, QPoint>> uris;
 
-    for (auto it = m_items.constBegin(); it != m_items.constEnd(); ++it) {
+    for (auto it = mItems.constBegin(); it != mItems.constEnd(); ++it) {
         QPoint p = it.value();
         QString uri = it.key();
         if (!posAvailable(p)) {
@@ -329,7 +329,7 @@ QList<QPair<QString, QPoint> > GScreen::getItemsAndPosAll()
 {
     QList<QPair<QString, QPoint>> uris;
 
-    for (auto it = m_items.constBegin(); it != m_items.constEnd(); ++it) {
+    for (auto it = mItems.constBegin(); it != mItems.constEnd(); ++it) {
         QPoint p = it.value();
         QString uri = it.key();
         uris << (QPair<QString, QPoint> (uri, coordinateLocal2Global(p)));
@@ -340,7 +340,7 @@ QList<QPair<QString, QPoint> > GScreen::getItemsAndPosAll()
 
 bool GScreen::uriIsOnScreen(const QString &uri) const
 {
-    return m_items.contains(uri);
+    return mItems.contains(uri);
 }
 
 QPoint GScreen::putIconOnScreen(const QString uri, QPoint start, bool force)
@@ -363,7 +363,7 @@ QStringList GScreen::putIconsOnScreen(const QStringList uris, bool force)
 
 void GScreen::makeAllItemsGridPosInvalid()
 {
-    m_items.clear();
+    mItems.clear();
 }
 
 bool GScreen::saveMetaPos(const QString &uri, const QPoint &pos)
@@ -379,7 +379,7 @@ bool GScreen::saveMetaPos(const QString &uri, const QPoint &pos)
 
 QScreen* GScreen::getScreen() const
 {
-    return m_screen;
+    return mScreen;
 }
 
 QPoint GScreen::placeItem(const QString &uri, QPoint lastPos, bool force)
@@ -388,27 +388,27 @@ QPoint GScreen::placeItem(const QString &uri, QPoint lastPos, bool force)
         return INVALID_POS;
     }
 
-    if (m_items.value(uri, INVALID_POS) != INVALID_POS) {
-        m_items.remove(uri);
+    if (mItems.value(uri, INVALID_POS) != INVALID_POS) {
+        mItems.remove(uri);
     }
 
     QPoint pos = INVALID_POS;
     int x = lastPos.x();
     int y = lastPos.y();
-    while (x <= m_maxColumn && y <= m_maxRow) {
+    while (x <= mMaxColumn && y <= mMaxRow) {
         // check if there is an index in this grid pos.
         auto tmp = QPoint(x, y);
-        if (m_items.key(tmp).isEmpty()) {
+        if (mItems.key(tmp).isEmpty()) {
             pos.setX(x);
             pos.setY(y);
-            m_items.insert(uri, pos);
+            mItems.insert(uri, pos);
             return pos;
         } else {
-            if (y + 1 <= m_maxRow) {
+            if (y + 1 <= mMaxRow) {
                 y++;
             } else {
                 y = 0;
-                if (x + 1 <= m_maxColumn) {
+                if (x + 1 <= mMaxColumn) {
                     x++;
                 } else {
                     // out of grid, break
@@ -421,7 +421,7 @@ QPoint GScreen::placeItem(const QString &uri, QPoint lastPos, bool force)
 
     // 强行放置到 (0, 0) 位置
     if (force) {
-        m_items.insert(uri, QPoint(0, 0));
+        mItems.insert(uri, QPoint(0, 0));
         return QPoint(0, 0);
     }
 
@@ -430,8 +430,8 @@ QPoint GScreen::placeItem(const QString &uri, QPoint lastPos, bool force)
 
 QPoint GScreen::itemGridPos(const QString &uri)
 {
-    if (m_items.contains(uri)) {
-        QPoint rowColum = m_items[uri];
+    if (mItems.contains(uri)) {
+        QPoint rowColum = mItems[uri];
         return coordinateLocal2Global(rowColum);
     }
 
@@ -440,11 +440,11 @@ QPoint GScreen::itemGridPos(const QString &uri)
 
 void GScreen::makeItemGridPosInvalid(const QString &uri)
 {
-    m_items.remove(uri);
+    mItems.remove(uri);
 
 #if 0
     qDebug() << "-------------------------" << __FUNCTION__ << "-------------------------";
-    for (auto u : m_items.keys()) {
+    for (auto u : mItems.keys()) {
         qDebug() << "uri:" << u;
     }
     qDebug() << "------------------------------------------------------------------------";
@@ -453,16 +453,16 @@ void GScreen::makeItemGridPosInvalid(const QString &uri)
 
 void GScreen::makeItemMetaPosInvalid(const QString &uri)
 {
-    m_itemsMetaPoses.remove(uri);
+    mItemsMetaPoses.remove(uri);
 }
 
 bool GScreen::isItemOutOfGrid(const QString &uri)
 {
-    auto pos = m_items.value(uri);
+    auto pos = mItems.value(uri);
 
     if (pos == INVALID_POS) {
         return true;
-    } else if (pos.x() > m_maxColumn || pos.y() > m_maxRow) {
+    } else if (pos.x() > mMaxColumn || pos.y() > mMaxRow) {
         return false;
     }
 
@@ -472,13 +472,13 @@ bool GScreen::isItemOutOfGrid(const QString &uri)
 // 表示行列
 QPoint GScreen::getItemRelatedPosition(const QString &uri)
 {
-    if (!m_screen || "" == uri) {
+    if (!mScreen || "" == uri) {
         return INVALID_POS;
     }
 
     QPoint pos = INVALID_POS;
 
-    if (m_items.contains(uri))  pos = m_items[uri];
+    if (mItems.contains(uri))  pos = mItems[uri];
     if (INVALID_POS == pos)     pos = getMetaPos(uri);
     if (INVALID_POS != pos)     return pos;
 
@@ -487,7 +487,7 @@ QPoint GScreen::getItemRelatedPosition(const QString &uri)
 
 QPoint GScreen::getItemGlobalPosition(const QString &uri)
 {
-    if (!m_screen || "" == uri) {
+    if (!mScreen || "" == uri) {
         return INVALID_POS;
     }
 
@@ -501,12 +501,12 @@ QPoint GScreen::getItemGlobalPosition(const QString &uri)
 
 QString GScreen::getItemFromRelatedPosition(const QPoint &pos)
 {
-    if (!m_screen) {
+    if (!mScreen) {
         return nullptr;
     }
 
-    if (pos.x() <= m_maxColumn && pos.x() >= 0 && pos.y() <= m_maxRow && pos.y() >= 0) {
-        return m_items.key(pos);
+    if (pos.x() <= mMaxColumn && pos.x() >= 0 && pos.y() <= mMaxRow && pos.y() >= 0) {
+        return mItems.key(pos);
     } else {
         return nullptr;
     }
@@ -514,23 +514,23 @@ QString GScreen::getItemFromRelatedPosition(const QPoint &pos)
 
 QPoint GScreen::coordinateGlobal2Local(const QPoint &pos) const
 {
-    QPoint posl = pos - m_screen->geometry().topLeft();
+    QPoint posl = pos - mScreen->geometry().topLeft();
 
-    return QPoint(posl.x() / m_gridSize.width(), posl.y() / m_gridSize.height());
+    return QPoint(posl.x() / mGridSize.width(), posl.y() / mGridSize.height());
 }
 
 QPoint GScreen::coordinateLocal2Global(const QPoint &pos) const
 {
-    QPoint posg(pos.x() * m_gridSize.width(), pos.y() * m_gridSize.height());
+    QPoint posg(pos.x() * mGridSize.width(), pos.y() * mGridSize.height());
 
-    g_return_val_if_fail(m_screen, posg);
+    g_return_val_if_fail(mScreen, posg);
 
-    return m_screen->geometry().topLeft() + posg;
+    return mScreen->geometry().topLeft() + posg;
 }
 
 bool GScreen::posAvailable(QPoint &p) const
 {
-    if (p.x() >= m_maxRow || p.y() >= m_maxColumn) {
+    if (p.x() >= mMaxRow || p.y() >= mMaxColumn) {
         return false;
     }
 
@@ -539,7 +539,7 @@ bool GScreen::posAvailable(QPoint &p) const
 
 QString GScreen::getItemFromGlobalPosition(const QPoint &pos)
 {
-    if (!m_screen) {
+    if (!mScreen) {
         return nullptr;
     }
 
@@ -549,19 +549,19 @@ QString GScreen::getItemFromGlobalPosition(const QPoint &pos)
 // pos 表示行列
 bool GScreen::setItemGridPos(const QString &uri, const QPoint &pos)
 {
-    auto currentGridPos = m_items.value(uri);
+    auto currentGridPos = mItems.value(uri);
     if (currentGridPos == pos) {
         return true;
     }
 
-    if (pos.x() > m_maxColumn || pos.y() > m_maxRow || pos.x() < 0 || pos.y() < 0 || iconIsConflict(pos)) {
+    if (pos.x() > mMaxColumn || pos.y() > mMaxRow || pos.x() < 0 || pos.y() < 0 || iconIsConflict(pos)) {
         qWarning() << "invalid grid pos";
         return false;
     }
 
-    auto itemOnTargetPos = m_items.key(pos);
+    auto itemOnTargetPos = mItems.key(pos);
     if (itemOnTargetPos.isEmpty()) {
-        m_items.insert(uri, pos);
+        mItems.insert(uri, pos);
         return true;
     } else {
         return false;
@@ -570,7 +570,7 @@ bool GScreen::setItemGridPos(const QString &uri, const QPoint &pos)
 
 bool GScreen::setItemWithGlobalPos(const QString &uri, const QPoint &pos)
 {
-    if (m_screen && m_screen->availableGeometry().contains(pos)) {
+    if (mScreen && mScreen->availableGeometry().contains(pos)) {
         return setItemGridPos(uri, coordinateGlobal2Local(pos));
     }
 
@@ -580,7 +580,7 @@ bool GScreen::setItemWithGlobalPos(const QString &uri, const QPoint &pos)
 // pos 表示位置
 bool GScreen::saveItemWithGlobalPos(const QString &uri, const QPoint &pos)
 {
-    if (m_screen && m_screen->geometry().contains(pos)) {
+    if (mScreen && mScreen->geometry().contains(pos)) {
         return saveMetaPos(uri, coordinateGlobal2Local(pos));
     }
 
@@ -594,19 +594,19 @@ void GScreen::rebindScreen(QScreen *screen)
         return;
     }
 
-    if (m_screen) {
-        m_screen->disconnect(m_screen, &QScreen::geometryChanged, this, 0);
-        m_screen->disconnect(m_screen, &QScreen::destroyed, this, 0);
+    if (mScreen) {
+        mScreen->disconnect(mScreen, &QScreen::geometryChanged, this, 0);
+        mScreen->disconnect(mScreen, &QScreen::destroyed, this, 0);
     }
 
-    QHash<QString, QPoint>  item = m_items;
-    QHash<QString, QPoint>  itemPoss = m_itemsMetaPoses;
+    QHash<QString, QPoint>  item = mItems;
+    QHash<QString, QPoint>  itemPoss = mItemsMetaPoses;
 
     // FIXME://
-    m_geometry.adjust(m_panelMargins.left(), m_panelMargins.top(), -m_panelMargins.right(), -m_panelMargins.bottom());
-    connect(m_screen, &QScreen::geometryChanged, this, &GScreen::onScreenGeometryChanged);
-    connect(m_screen, &QScreen::destroyed, this, [=](){
-        m_screen = nullptr;
+    mGeometry.adjust(mPanelMargins.left(), mPanelMargins.top(), -mPanelMargins.right(), -mPanelMargins.bottom());
+    connect(mScreen, &QScreen::geometryChanged, this, &GScreen::onScreenGeometryChanged);
+    connect(mScreen, &QScreen::destroyed, this, [=](){
+        mScreen = nullptr;
         Q_EMIT screenVisibleChanged(false);
     });
 

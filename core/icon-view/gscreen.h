@@ -14,7 +14,7 @@ class QScreen;
 namespace graceful
 {
 
-class DesktopView;
+class IconView;
 
 class GScreen : public QObject
 {
@@ -74,7 +74,7 @@ public Q_SLOTS:
 protected:
     void recalculateGrid();
 
-    DesktopView *getView();
+    IconView *getView();
     QString getIndexUri(const QModelIndex &index);
 
 private:
@@ -101,16 +101,16 @@ private:
     QPoint placeItem(const QString &uri, QPoint lastPos=QPoint(), bool force=false);        // ok 传入行列 传出行列
 
 private:
-    int                             m_maxRow = 0;
-    int                             m_maxColumn = 0;
-    QRect                           m_geometry;
-    QSize                           m_gridSize;
-    QMargins                        m_panelMargins;
+    int                             mMaxRow = 0;
+    int                             mMaxColumn = 0;
+    QRect                           mGeometry;
+    QSize                           mGridSize;
+    QMargins                        mPanelMargins;
 
-    QHash<QString, QPoint>          m_items;                        // 图标在当前屏幕上的位置，可能与 meta 不一致，可能会导致冲突（待验证）
-    QHash<QString, QPoint>          m_itemsMetaPoses;               // 在当前屏幕的位置，与 meta 属性保持一致
+    QHash<QString, QPoint>          mItems;                                                 // 图标在当前屏幕上的位置，可能与 meta 不一致，可能会导致冲突（待验证）
+    QHash<QString, QPoint>          mItemsMetaPoses;                                        // 在当前屏幕的位置，与 meta 属性保持一致
 
-    QScreen*                        m_screen = nullptr;
+    QScreen*                        mScreen = nullptr;
 };
 
 }
