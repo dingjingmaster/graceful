@@ -1,10 +1,13 @@
 HEADERS += \
-    $$PWD/icon-view-editor.h \
-    $$PWD/icon-view-text-helper.h \
-    $$PWD/utils.h
+    $$PWD/utils.h                                   \
+    $$PWD/file-luncher.h                            \
+    $$PWD/icon-view-editor.h                        \
+    $$PWD/icon-view-text-helper.h                   \
+
 
 SOURCES += \
-    $$PWD/icon-view-editor.cpp \
-    $$PWD/icon-view-text-helper.cpp \
-    $$PWD/utils.cpp
+    $$PWD/utils.cpp                                 \
+    $$PWD/file-luncher.cpp                          \
+    $$PWD/icon-view-editor.cpp                      \
+    $$PWD/icon-view-text-helper.cpp                 \
 
