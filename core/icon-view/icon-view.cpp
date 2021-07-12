@@ -48,8 +48,6 @@ IconView::IconView(QWidget *parent) : QAbstractItemView(parent)
 
     setItemDelegate(new IconViewDelegate(this));
 
-    QIcon::setThemeName("ukui-icon-theme-default");
-
     setIconSize(QSize(64, 64));
 
     initShoutCut();
@@ -118,8 +116,6 @@ IconView::IconView(QWidget *parent) : QAbstractItemView(parent)
     });
 
     connect(qApp, &QGuiApplication::primaryScreenChanged, this, [=] (QScreen* prims) {
-        qDebug() << "DJ- &QGuiApplication::primaryScreenChanged" << prims;
-
         GScreen* oldPrimaryScreen = mPrimaryScreen;
         for (auto s : mScreens) {
             if (prims == s->getScreen()) {
@@ -178,7 +174,6 @@ void IconView::addScreen(GScreen *screen)
 void IconView::swaGScreen(GScreen *screen1, GScreen *screen2)
 {
     if (!screen1 || !screen2 || screen1 == screen2) {
-        qCritical() << "DJ- invalide screen arguments " << screen1 << "  ---  " << screen2;
         return;
     }
 
@@ -224,7 +219,6 @@ void IconView::swaGScreen(GScreen *screen1, GScreen *screen2)
 void IconView::removeScreen(GScreen *screen)
 {
     if (!screen) {
-        qCritical()<<"invalid screen id";
         return;
     }
 
@@ -255,10 +249,8 @@ QRect IconView::visualRect(const QModelIndex &index) const
 
         if (mItemsPosesCached.contains(uri)) {
             rect.translate(mItemsPosesCached[uri]);
-            qDebug() << "mItemsPosesCached" << uri << mItemsPosesCached[uri];
         } else {
             QPoint pos = getFileMetaInfoPos(uri);
-            qDebug() << "getFileMetaInfoPos:" << uri << pos;
             if (INVALID_POS != pos) {
                 rect = QRect(pos, getIconSize());
             }
@@ -277,7 +269,6 @@ bool IconView::isRenaming() const
 
 QModelIndex IconView::indexAt(const QPoint &point) const
 {
-    // FIXME://优化
     QList<QRect> visualRects;
     for (int row = 0; row < model()->rowCount(); row++) {
         auto index = model()->index(row, 0);
@@ -322,14 +313,11 @@ bool IconView::trySetIndexToPos(const QModelIndex &index, const QPoint &pos)
         }
         if (screen->setItemWithGlobalPos(uri, pos)) {
             mItemsPosesCached.remove(uri);
-            //清空其它屏幕关于此index的gridPos?
             for (auto screen : mScreens) {
                 screen->makeItemGridPosInvalid(uri);
             }
-            //效率？
             return screen->setItemWithGlobalPos(uri, pos);
         } else {
-            //不改变位置
         }
     }
     return false;
@@ -712,10 +700,8 @@ void IconView::paintEvent(QPaintEvent *event)
             opt.state &= ~QStyle::State_MouseOver;
         }
 
-        qDebug() << "paint uri:" << item << "  -- pos:" << opt.rect << "icon:" << opt.icon.isNull();
-
-        qApp->style()->drawControl(QStyle::CE_ItemViewItem, &opt, &p, this);
-//        itemDelegate()->paint(&p, opt, index);
+//        qApp->style()->drawControl(QStyle::CE_ItemViewItem, &opt, &p, this);
+        itemDelegate()->paint(&p, opt, index);
     }
 }
 
@@ -786,7 +772,6 @@ void IconView::dropEvent(QDropEvent* event)
                     itemsNeedBeRelayouted << uri;
                 }
             }
-
             relayoutItems(itemsNeedBeRelayouted);
         }
     }
@@ -984,7 +969,6 @@ void IconView::rowsInserted(const QModelIndex &parent, int start, int end)
             QString uri = getIndexUri(index);
             mItems.append(uri);
 
-            // 优先获取 meta 信息
             mItemsPosesCached.remove(uri);
             QPoint pos = getFileMetaInfoPos(uri);
             if (INVALID_POS != pos) {
@@ -1021,7 +1005,6 @@ void IconView::rowsAboutToBeRemoved(const QModelIndex &parent, int start, int en
         screen->makeItemGridPosInvalid(getIndexUri(indexAboutToBeRemoved));
     }
 
-    // 重排浮动元素
     relayoutItems(mFloatItems);
 
     viewport()->update();
@@ -1029,17 +1012,14 @@ void IconView::rowsAboutToBeRemoved(const QModelIndex &parent, int start, int en
 
 void IconView::saveItemsPositions()
 {
-    //非越界元素的确认，越界元素不应该保存位置
     QStringList itemOnAllScreen;
     for (auto screen : mScreens) {
         itemOnAllScreen << screen->getItemsVisibleOnScreen();
     }
 
     for (auto item : itemOnAllScreen) {
-        //检查当前位置是否有重叠，如果有，则不确认
         bool isOverlapped = isItemOverlapped(item);
         if (!isOverlapped) {
-            //从浮动元素中排除
             mFloatItems.removeOne(item);
 
             for (auto s : mScreens) {
@@ -1047,7 +1027,6 @@ void IconView::saveItemsPositions()
                 s->makeItemMetaPosInvalid(item);
             }
 
-            //设置metainfo
             auto screen = getItemScreen(item);
             if (screen) {
                 QPoint gridPos = screen->itemGridPos(item);
@@ -1067,8 +1046,8 @@ void IconView::handleScreenChanged(GScreen *screen)
     std::sort(items.begin(), items.end(), iconSizeLessThan);
 
     QPoint p (0, 0);
-    bool full = false;              // 当前屏幕是否已满
-    bool allFull = false;           // 所有屏幕已满
+    bool full = false;
+    bool allFull = false;
     for (auto it : items) {
         bool success = false;
         QString uri = it.first;
@@ -1082,7 +1061,6 @@ void IconView::handleScreenChanged(GScreen *screen)
         screen->makeItemGridPosInvalid(uri);
         screen->makeItemMetaPosInvalid(uri);
 
-        // 放置失败或者不在屏幕上，先尝试本屏放置
         if (!full) {
             p = screen->putIconOnScreen(uri, p);
             if (INVALID_POS == p) {
@@ -1093,7 +1071,6 @@ void IconView::handleScreenChanged(GScreen *screen)
             }
         }
 
-        // 放置到其它屏幕
         if(!allFull) {
             for (auto s : mScreens) {
                 if (s != screen) {
@@ -1108,7 +1085,6 @@ void IconView::handleScreenChanged(GScreen *screen)
             }
         }
 
-        // 所有屏幕没有合适位置放主屏
         if (!success) {
             mPrimaryScreen->putIconOnScreen(uri, QPoint(0, 0), true);
             screen->saveItemWithGlobalPos(uri, p);
@@ -1121,15 +1097,10 @@ void IconView::handleScreenChanged(GScreen *screen)
 
 void IconView::handleGridSizeChanged()
 {
-    // 保持index相对的grid位置不变，对越界图标进行处理
     for (auto screen : mScreens) {
         screen->onScreenGridSizeChanged(getGridSize());
-        // 更新屏幕内图标的位置
-
-        // 记录越界图标
         handleScreenChanged(screen);
     }
-    // 重排越界图标
 
     viewport()->update();
 }
@@ -1158,7 +1129,6 @@ void IconView::relayoutItems(const QStringList &uris)
         }
 
         if (!success) {
-            // 可以优化，明确主屏已满情况下，可以直接放到 QPoint(0, 0); 另加 api
             mPrimaryScreen->putIconOnScreen(uri, QPoint(0, 0), true);
         }
     }

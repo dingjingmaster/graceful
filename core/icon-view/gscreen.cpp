@@ -15,7 +15,6 @@ namespace graceful
 GScreen::GScreen(QScreen *screen, QSize gridSize, QObject *parent) : QObject(parent)
 {
     if (!screen) {
-        qCritical()<<"invalid screen";
         return;
     }
 
@@ -84,7 +83,6 @@ void GScreen::onScreenGeometryChanged(const QRect &geometry)
 void GScreen::onScreenGridSizeChanged(const QSize &gridSize)
 {
     if (gridSize.isEmpty()) {
-        qCritical()<<"invalid grid size";
         return;
     }
 
@@ -168,7 +166,6 @@ QStringList GScreen::getItemsOutOfScreen()
     for (auto uri : mItems.keys()) {
         auto gridPos = mItems.value(uri);
         if (gridPos.x() > mMaxColumn || gridPos.y() > mMaxRow) {
-            qDebug() << "屏幕外的 uri:" << uri;
             list << uri;
         }
     }
@@ -189,7 +186,6 @@ QStringList GScreen::getItemsVisibleOnScreen()
     for (auto uri : uris) {
         auto gridPos = mItems.value(uri);
         if (gridPos.x() <= mMaxColumn && gridPos.y() <= mMaxRow) {
-            qDebug() << "屏幕上可见的 uri: " << uri;
             list << uri;
         }
     }
@@ -208,7 +204,6 @@ QStringList GScreen::getItemsOverrideOnScreen()
         QString posStr = QString("%1x%2").arg(pos.x()).arg(pos.y());
         if (filter.contains(posStr)) {
             list << uri;
-            qDebug() << "重叠的 uri:" << uri << " -- " << posStr << " point:" << coordinateLocal2Global(pos);
         }
         filter[posStr] = true;
     }
@@ -419,7 +414,6 @@ QPoint GScreen::placeItem(const QString &uri, QPoint lastPos, bool force)
         }
     }
 
-    // 强行放置到 (0, 0) 位置
     if (force) {
         mItems.insert(uri, QPoint(0, 0));
         return QPoint(0, 0);
@@ -469,7 +463,6 @@ bool GScreen::isItemOutOfGrid(const QString &uri)
     return true;
 }
 
-// 表示行列
 QPoint GScreen::getItemRelatedPosition(const QString &uri)
 {
     if (!mScreen || "" == uri) {
@@ -546,7 +539,6 @@ QString GScreen::getItemFromGlobalPosition(const QPoint &pos)
     return getItemFromRelatedPosition(coordinateGlobal2Local(pos));
 }
 
-// pos 表示行列
 bool GScreen::setItemGridPos(const QString &uri, const QPoint &pos)
 {
     auto currentGridPos = mItems.value(uri);
@@ -555,7 +547,6 @@ bool GScreen::setItemGridPos(const QString &uri, const QPoint &pos)
     }
 
     if (pos.x() > mMaxColumn || pos.y() > mMaxRow || pos.x() < 0 || pos.y() < 0 || iconIsConflict(pos)) {
-        qWarning() << "invalid grid pos";
         return false;
     }
 
@@ -577,7 +568,6 @@ bool GScreen::setItemWithGlobalPos(const QString &uri, const QPoint &pos)
     return false;
 }
 
-// pos 表示位置
 bool GScreen::saveItemWithGlobalPos(const QString &uri, const QPoint &pos)
 {
     if (mScreen && mScreen->geometry().contains(pos)) {
@@ -590,7 +580,6 @@ bool GScreen::saveItemWithGlobalPos(const QString &uri, const QPoint &pos)
 void GScreen::rebindScreen(QScreen *screen)
 {
     if (!screen) {
-        qCritical()<<"invalid screen";
         return;
     }
 

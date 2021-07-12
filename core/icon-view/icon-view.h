@@ -148,11 +148,11 @@ private:
     QList <GScreen*>                    mScreens;
     GScreen*                            mPrimaryScreen;
 
-    QStringList                         mItems;                         // 所有桌面图标 uri
-    QStringList                         mFloatItems;                    // 当有拖拽或者libpeony文件操作触发时，固定所有float元素并记录metaInfo
-    QMap<QString, QPoint>               mItemsPosesCached;              //
+    QStringList                         mItems;
+    QStringList                         mFloatItems;
+    QMap<QString, QPoint>               mItemsPosesCached;
 
-    QQueue<QString>                     mTobeRendered;                  // 将要重新绘制的图标
+    QQueue<QString>                     mTobeRendered;
 
     QPoint                              mPressPos;
     QPoint                              mDragStartPos;
