@@ -4,6 +4,8 @@
 #include "screen.h"
 #include "desktop-view.h"
 
+#include <gio/gio.h>
+
 namespace graceful
 {
 
@@ -520,6 +522,8 @@ QPoint GScreen::coordinateGlobal2Local(const QPoint &pos) const
 QPoint GScreen::coordinateLocal2Global(const QPoint &pos) const
 {
     QPoint posg(pos.x() * m_gridSize.width(), pos.y() * m_gridSize.height());
+
+    g_return_val_if_fail(m_screen, posg);
 
     return m_screen->geometry().topLeft() + posg;
 }

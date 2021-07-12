@@ -5,6 +5,7 @@
 #include <QIcon>
 #include <QDebug>
 #include <QMimeData>
+#include <QIcon>
 
 #include <syslog.h>
 
@@ -134,13 +135,7 @@ QVariant graceful::DesktopFileModel::data(const QModelIndex &index, int role) co
         return QVariant();
     }
 
-    if ((role == Qt::TextAlignmentRole) || (role == Qt::ForegroundRole)) {
-        return int(Qt::AlignHCenter | Qt::AlignVCenter);
-    }
-
     DesktopFileModelItem* item = reinterpret_cast<DesktopFileModelItem*>(index.internalPointer());
-
-    qDebug() << "row: " << index.row() << " colume: " << index.column() << " role" << role << " is display role:" << (Qt::DisplayRole == role);
 
     switch(role) {
     case Qt::ToolTipRole:
@@ -167,14 +162,11 @@ QVariant graceful::DesktopFileModel::data(const QModelIndex &index, int role) co
         break;
     }
     case Qt::DecorationRole: {
-        if(index.column() == 0) {
-            return QVariant(item->icon());
-        }
-        break;
+        return QIcon::fromTheme("folder");
     }
     case Qt::EditRole: {
         if(index.column() == 0) {
-            return (item->uri());
+            return (item->name());
         }
         break;
     }
@@ -489,4 +481,9 @@ QString graceful::DesktopFileModelItem::path() const
 QIcon graceful::DesktopFileModelItem::icon() const
 {
     return mFile->icon();
+}
+
+QString graceful::DesktopFileModelItem::iconName() const
+{
+    return mFile->iconName();
 }

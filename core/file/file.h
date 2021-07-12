@@ -23,8 +23,10 @@ public:
     QString uriDisplay();
 
     QIcon icon();
+    QString iconName();
 
     bool isDir();
+    bool isRegularFile();
     bool isValid();
     bool isVirtual();                       // FIXME://
     const GFile* getGFile();

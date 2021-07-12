@@ -1,8 +1,9 @@
 #include "file.h"
 #include "utils/utils.h"
 
-#include <QIcon>
 #include <QUrl>
+#include <QIcon>
+#include <QDebug>
 #include <private/qobject_p.h>
 
 namespace graceful
@@ -17,6 +18,9 @@ public:
 public:
     GFile*                              mFile;
     File*                               q_ptr = nullptr;
+
+
+    QString                             mIconName = nullptr;
 };
 
 FilePrivate::FilePrivate(File* f, QString uri) : QObjectPrivate(), q_ptr(f)
@@ -82,8 +86,40 @@ QString graceful::File::uriDisplay()
 
 QIcon graceful::File::icon()
 {
-    // fixme://
-    return QIcon();
+    if (isDir()) {
+        return QIcon::fromTheme("view-paged-symbolic", QIcon::fromTheme("folder"));
+    } else if (isRegularFile()) {
+        return QIcon::fromTheme("view-paged-symbolic", QIcon::fromTheme("folder"));;
+    }
+
+    QIcon icon = QIcon::fromTheme("folder");
+
+    qDebug() << "icon:" << icon.isNull();
+
+    return icon;
+}
+
+QString graceful::File::iconName()
+{
+    Q_D(File);
+
+    GFile* fileTmp = static_cast<GFile*>(G_FILE(getGFile()));
+
+    g_return_val_if_fail(G_FILE(getGFile()), "text-x-generic");
+
+    g_autoptr(GFileInfo) fileInfo = g_file_query_info(fileTmp, "*", G_FILE_QUERY_INFO_NOFOLLOW_SYMLINKS, nullptr, nullptr);
+
+    GIcon* g_symbolic_icon = g_file_info_get_symbolic_icon (fileInfo);
+    if (G_IS_ICON(g_symbolic_icon)) {
+        const gchar* const* symbolic_icon_names = g_themed_icon_get_names(G_THEMED_ICON (g_symbolic_icon));
+        if (symbolic_icon_names) {
+            d->mIconName = *symbolic_icon_names;
+        }
+    }
+
+    qDebug() << "icon Name:" << d->mIconName;
+
+    return d->mIconName;
 }
 
 bool graceful::File::isDir()
@@ -93,6 +129,15 @@ bool graceful::File::isDir()
     GFileType type = g_file_query_file_type(d->mFile, G_FILE_QUERY_INFO_NOFOLLOW_SYMLINKS, nullptr);
 
     return type == G_FILE_TYPE_DIRECTORY;
+}
+
+bool graceful::File::isRegularFile()
+{
+    Q_D(File);
+
+    GFileType type = g_file_query_file_type(d->mFile, G_FILE_QUERY_INFO_NOFOLLOW_SYMLINKS, nullptr);
+
+    return type == G_FILE_TYPE_REGULAR;
 }
 
 bool graceful::File::isValid()

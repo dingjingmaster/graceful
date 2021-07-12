@@ -295,6 +295,16 @@ QModelIndex DesktopView::indexAt(const QPoint &point) const
 
 QModelIndex DesktopView::findIndexByUri(const QString &uri) const
 {
+    if (model()) {
+        for (int row = 0; row < model()->rowCount(); row++) {
+            auto index = model()->index(row, 0);
+            auto indexUri = getIndexUri(index);
+            if (indexUri == uri) {
+                return index;
+            }
+        }
+    }
+
     return QModelIndex();
 }
 
@@ -639,7 +649,6 @@ QPoint DesktopView::getFileMetaInfoPos(const QString &uri) const
         }
     }
 
-    // 针对第一次没有 meta 处理
     if (poss == INVALID_POS) {
         for (auto s : m_screens) {
             QPoint p = s->putIconOnScreen(uri);
@@ -703,9 +712,10 @@ void DesktopView::paintEvent(QPaintEvent *event)
             opt.state &= ~QStyle::State_MouseOver;
         }
 
-        qDebug() << "paint uri:" << item << "  -- pos:" << opt.rect;
+        qDebug() << "paint uri:" << item << "  -- pos:" << opt.rect << "icon:" << opt.icon.isNull();
 
-        itemDelegate()->paint(&p, opt, index);
+        qApp->style()->drawControl(QStyle::CE_ItemViewItem, &opt, &p, this);
+//        itemDelegate()->paint(&p, opt, index);
     }
 }
 

@@ -64,7 +64,7 @@ void DesktopIndexWidget::paintEvent(QPaintEvent *e)
     auto bgColor = m_option.palette.highlight().color();
     p.save();
     p.setPen(Qt::transparent);
-    bgColor.setAlpha(255*0.7);
+    bgColor.setAlpha(255 * 0.7);
     p.setBrush(bgColor);
     p.drawRoundedRect(this->rect(), 6, 6);
     p.restore();
