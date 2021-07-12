@@ -35,7 +35,7 @@ HEADERS += \
     $$PWD/screensaver.h                         \
     $$PWD/notification.h                        \
     $$PWD/notification_p.h                      \
-    $$PWD/application.h
+    $$PWD/application.h                         \
 
 
 SOURCES += \
@@ -48,6 +48,8 @@ SOURCES += \
 
 INSTALL_HEADERS.files = \
     $$LOG_HEADERS                               \
+    $$ICON_VIEW_HEADER                          \
+    $$FILE_MODEL_HEADERS                        \
     $$QHOTKEY_PUBLIC_HEADERS                    \
     $$PWD/globals.h                             \
     $$PWD/settings.h                            \
@@ -64,9 +66,13 @@ INSTALL_PRIVATE_HEADERS.files = \
 INSTALL_HEADERS.path = $$INSTALL_HEADER_DIR
 INSTALL_PRIVATE_HEADERS.path = $$INSTALL_HEADER_DIR/private/
 
+PC_FILE.path = $$[QT_INSTALL_LIBS]/pkgconfig
+PC_FILE.files = $$PWD/graceful.pc
+
 
 INSTALLS += \
     target                                      \
+    PC_FILE                                     \
     POWER_LIB                                   \
     INSTALL_HEADERS                             \
     INSTALL_PRIVATE_HEADERS                     \

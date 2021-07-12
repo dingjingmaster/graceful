@@ -1,5 +1,6 @@
 #include "icon-view.h"
 
+#include "gscreen.h"
 #include "icon-view-delegate.h"
 
 #include <QDebug>

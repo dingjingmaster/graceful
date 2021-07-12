@@ -1,8 +1,6 @@
 #ifndef ICONVIEW_H
 #define ICONVIEW_H
 
-#include "gscreen.h"
-
 #include <QMap>
 #include <QTimer>
 #include <QQueue>
@@ -12,6 +10,7 @@ class QRubberBand;
 
 namespace graceful
 {
+class GScreen;
 class FileModel;
 
 class IconView : public QAbstractItemView

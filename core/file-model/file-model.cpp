@@ -1,14 +1,14 @@
 #include "file-model.h"
-#include <QtCore/private/qobject_p.h>
 
 #include <QSize>
 #include <QIcon>
-#include <QDebug>
-#include <QMimeData>
 #include <QIcon>
-
+#include <QDebug>
 #include <syslog.h>
+#include <QMimeData>
+#include <QtCore/private/qobject_p.h>
 
+#include "file/file.h"
 #include "file/file-enumerator.h"
 
 graceful::FileModel::FileModel(QObject *parent) : QAbstractItemModel(parent)

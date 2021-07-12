@@ -6,13 +6,13 @@
 #include <QAbstractItemModel>
 
 #include "globals.h"
-#include "file/file.h"
 
 class QAbstractItemModelPrivate;
 
 namespace graceful
 {
 
+class File;
 class GRACEFUL_API FileModelItem
 {
 public:
