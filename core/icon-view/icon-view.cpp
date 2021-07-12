@@ -189,7 +189,6 @@ void IconView::swaGScreen(GScreen *screen1, GScreen *screen2)
 
     screen1->swapScreen(*screen2);
 
-    // list操作
     int index1 = mScreens.indexOf(screen1);
     int index2 = mScreens.indexOf(screen2);
     mScreens.replace(index1, screen2);

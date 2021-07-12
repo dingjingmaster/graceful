@@ -54,27 +54,27 @@ public:
 
     void _saveItemsPoses();
 
-    void zoomIn();                              // ok
-    void zoomOut();                             // ok
-    ZoomLevel zoomLevel() const;                // ok
+    void zoomIn();
+    void zoomOut();
+    ZoomLevel zoomLevel() const;
 
-    void initMenu();                            // ok
-    void initShoutCut();                        // ok
+    void initMenu();
+    void initShoutCut();
 
-    void setRenaming (bool);                    // ok
-    void setEditFlag (bool);                    // ok
-    const QRect getBoundingRect();              // ???
-    void openFileByUri(QString uri);            // ok
+    void setRenaming (bool);
+    void setEditFlag (bool);
+    const QRect getBoundingRect();
+    void openFileByUri(QString uri);
 
-    QSize getGridSize() const;                  // ok
-    QSize getIconSize() const;                  // ok
-    QPoint getMarginLeftTop() const;            // ok
+    QSize getGridSize() const;
+    QSize getIconSize() const;
+    QPoint getMarginLeftTop() const;
 
     void setShowHidden();
-    void setDefaultZoomLevel(ZoomLevel level);                                              // ok
+    void setDefaultZoomLevel(ZoomLevel level);
 
-    void updateItemPosByUri(const QString &uri, const QPoint &pos);                         // ok
-    QPoint getFileMetaInfoPos(const QString &uri) const;                                    // ok
+    void updateItemPosByUri(const QString &uri, const QPoint &pos);
+    QPoint getFileMetaInfoPos(const QString &uri) const;
 
     void refresh();
 

@@ -9,8 +9,8 @@
 namespace graceful
 {
 
-#define ICONVIEW_PADDING            5
-#define INVALID_POS                 QPoint(-1, -1)
+#define ICONVIEW_PADDING                    5
+#define INVALID_POS                         QPoint(-1, -1)
 
 GScreen::GScreen(QScreen *screen, QSize gridSize, QObject *parent) : QObject(parent)
 {
