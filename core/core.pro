@@ -48,6 +48,7 @@ SOURCES += \
 
 INSTALL_HEADERS.files = \
     $$LOG_HEADERS                               \
+    $$INSTALL_UTILS                             \
     $$ICON_VIEW_HEADER                          \
     $$FILE_MODEL_HEADERS                        \
     $$QHOTKEY_PUBLIC_HEADERS                    \
