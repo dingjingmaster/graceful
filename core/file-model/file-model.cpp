@@ -162,7 +162,7 @@ QVariant graceful::FileModel::data(const QModelIndex &index, int role) const
         break;
     }
     case Qt::DecorationRole: {
-        return QIcon::fromTheme("folder");
+        return item->icon();
     }
     case Qt::EditRole: {
         if(index.column() == 0) {

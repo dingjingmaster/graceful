@@ -86,17 +86,7 @@ QString graceful::File::uriDisplay()
 
 QIcon graceful::File::icon()
 {
-    if (isDir()) {
-        return QIcon::fromTheme("view-paged-symbolic", QIcon::fromTheme("folder"));
-    } else if (isRegularFile()) {
-        return QIcon::fromTheme("view-paged-symbolic", QIcon::fromTheme("folder"));;
-    }
-
-    QIcon icon = QIcon::fromTheme("folder");
-
-    qDebug() << "icon:" << icon.isNull();
-
-    return icon;
+    return QIcon::fromTheme(iconName());
 }
 
 QString graceful::File::iconName()
@@ -111,13 +101,13 @@ QString graceful::File::iconName()
 
     GIcon* g_symbolic_icon = g_file_info_get_symbolic_icon (fileInfo);
     if (G_IS_ICON(g_symbolic_icon)) {
-        const gchar* const* symbolic_icon_names = g_themed_icon_get_names(G_THEMED_ICON (g_symbolic_icon));
+        const gchar* const* symbolic_icon_names = g_themed_icon_get_names(G_THEMED_ICON(g_symbolic_icon));
         if (symbolic_icon_names) {
-            d->mIconName = *symbolic_icon_names;
+            if (!QIcon::fromTheme(*symbolic_icon_names).isNull()) {
+                d->mIconName = *symbolic_icon_names;
+            }
         }
     }
-
-    qDebug() << "icon Name:" << d->mIconName;
 
     return d->mIconName;
 }
