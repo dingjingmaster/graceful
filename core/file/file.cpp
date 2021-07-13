@@ -1,13 +1,20 @@
 #include "file.h"
+#include "log/log.h"
 #include "utils/utils.h"
+#include "regular-file-type.h"
+#include "thumbnail-manager.h"
 
 #include <QUrl>
 #include <QIcon>
 #include <QDebug>
+#include <QRegExp>
 #include <private/qobject_p.h>
 
 namespace graceful
 {
+// .jpg, .jpeg, .jfif, .pjpeg, .pjp, .png
+QRegExp gImageFile("(\\.jpg|\\.jpeg|\\.jfif|\\.pjpeg|\\.pjp|\\.png)$");
+
 class FilePrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(File)
@@ -15,29 +22,47 @@ public:
     explicit FilePrivate(File* f, QString uri);
     ~FilePrivate();
 
+    void queryFileType();
+
 public:
-    GFile*                              mFile;
+    GFile*                              mFile = nullptr;
+    GFileInfo*                          mFileStandardInfo = nullptr;
+
+    QString                             mUri = nullptr;
+
+    GFileType                           mFileType = G_FILE_TYPE_UNKNOWN;
+    MIMEType                            mFileMimeType = FILE_TYPE_UNKNOW;
+
     File*                               q_ptr = nullptr;
-
-
-    QString                             mIconName = nullptr;
 };
 
 FilePrivate::FilePrivate(File* f, QString uri) : QObjectPrivate(), q_ptr(f)
 {
-    QString encodeUrl = Utils::urlEncode(uri);
-    QUrl url(encodeUrl);
-
-    if (!url.scheme().isNull()) {
-        mFile = g_file_new_for_uri(encodeUrl.toUtf8().constData());
+    if (uri.split("://").size() == 2) {
+        mUri = uri;
     } else if (uri.startsWith("/")) {
-        mFile = g_file_new_for_path(encodeUrl.toUtf8().constData());
+        mUri = "file://" + uri;
+    }
+
+    log_debug("new file by uri:%s", mUri.toUtf8().constData());
+
+    if (!mUri.isNull()) {
+        mFile = g_file_new_for_uri(Utils::urlEncode(mUri).toUtf8().constData());
+        mFileStandardInfo = g_file_query_info(mFile, "standard::*", G_FILE_QUERY_INFO_NOFOLLOW_SYMLINKS, nullptr, nullptr);
     }
 }
 
 FilePrivate::~FilePrivate()
 {
     if (mFile)                              g_object_unref(mFile);
+    if (mFileStandardInfo)                  g_object_unref(mFileStandardInfo);
+}
+
+void FilePrivate::queryFileType()
+{
+    if (G_FILE_TYPE_UNKNOWN == mFileType) {
+        mFileType = g_file_query_file_type(mFile, G_FILE_QUERY_INFO_NOFOLLOW_SYMLINKS, nullptr);
+    }
 }
 }
 
@@ -86,48 +111,55 @@ QString graceful::File::uriDisplay()
 
 QIcon graceful::File::icon()
 {
-    return QIcon::fromTheme(iconName());
+    // FIXME:// draw xxx.xxx icon
+    gf_return_val_if_fail(G_FILE(getGFile()), QIcon());
+
+    return ThumbnailManager::getInstance()->getIcon(*this);
 }
 
-QString graceful::File::iconName()
+int graceful::File::getMIMEType()
 {
     Q_D(File);
 
-    GFile* fileTmp = static_cast<GFile*>(G_FILE(getGFile()));
-
-    g_return_val_if_fail(G_FILE(getGFile()), "text-x-generic");
-
-    g_autoptr(GFileInfo) fileInfo = g_file_query_info(fileTmp, "*", G_FILE_QUERY_INFO_NOFOLLOW_SYMLINKS, nullptr, nullptr);
-
-    GIcon* g_symbolic_icon = g_file_info_get_symbolic_icon (fileInfo);
-    if (G_IS_ICON(g_symbolic_icon)) {
-        const gchar* const* symbolic_icon_names = g_themed_icon_get_names(G_THEMED_ICON(g_symbolic_icon));
-        if (symbolic_icon_names) {
-            if (!QIcon::fromTheme(*symbolic_icon_names).isNull()) {
-                d->mIconName = *symbolic_icon_names;
-            }
-        }
-    }
-
-    return d->mIconName;
+    return d->mFileMimeType;
 }
 
 bool graceful::File::isDir()
 {
     Q_D(File);
 
-    GFileType type = g_file_query_file_type(d->mFile, G_FILE_QUERY_INFO_NOFOLLOW_SYMLINKS, nullptr);
+    d->queryFileType();
 
-    return type == G_FILE_TYPE_DIRECTORY;
+    if (d->mFileType == G_FILE_TYPE_DIRECTORY) {
+        d->mFileMimeType = FILE_TYPE_DIRECTORY;
+    }
+
+    return false;
+}
+
+bool graceful::File::isImage()
+{
+    Q_D(File);
+
+    if (FILE_TYPE_IMAGE == d->mFileMimeType) {
+        return true;
+    }
+
+    if (isRegularFile() && path().contains(gImageFile)) {
+        d->mFileMimeType = FILE_TYPE_IMAGE;
+        return true;
+    }
+
+    return false;
 }
 
 bool graceful::File::isRegularFile()
 {
     Q_D(File);
 
-    GFileType type = g_file_query_file_type(d->mFile, G_FILE_QUERY_INFO_NOFOLLOW_SYMLINKS, nullptr);
+    d->queryFileType();
 
-    return type == G_FILE_TYPE_REGULAR;
+    return d->mFileType == G_FILE_TYPE_REGULAR;
 }
 
 bool graceful::File::isValid()
@@ -141,15 +173,23 @@ bool graceful::File::isVirtual()
 {
     Q_D(File);
 
+    d->queryFileType();
     // fixme://
 
     return false;
 }
 
-const GFile *graceful::File::getGFile()
+const GFile* graceful::File::getGFile()
 {
     Q_D(File);
 
     return d->mFile;
+}
+
+const GFileInfo* graceful::File::getGFileStandardInfo()
+{
+    Q_D(File);
+
+    return d->mFileStandardInfo;
 }
 

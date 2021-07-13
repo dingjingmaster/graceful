@@ -1,6 +1,6 @@
 #include "file-enumerator.h"
 #include "file.h"
-
+#include "log/log.h"
 #include <private/qobject_p.h>
 
 #define ENUMERATOR_FILE_NUM 100
@@ -77,6 +77,8 @@ void FileEnumerator::enumerateAsync()
 
     g_return_if_fail(file && G_IS_FILE(file));
 
+    log_debug("start enumerate path: '%s'", d->mRootFile.toUtf8().constData());
+
     g_file_enumerate_children_async(const_cast<GFile*>(file), G_FILE_ATTRIBUTE_STANDARD_NAME, G_FILE_QUERY_INFO_NOFOLLOW_SYMLINKS, G_PRIORITY_DEFAULT, d->mCancellable, GAsyncReadyCallback(d->enumerateAsyncCB), d);
 }
 
@@ -135,7 +137,7 @@ GAsyncReadyCallback FileEnumeratorPrivate::enumerateAsyncCB(GFile* file, GAsyncR
     GError*             error = nullptr;
     GFileEnumerator*    enumerator = g_file_enumerate_children_finish(file, res, &error);
 
-    g_return_val_if_fail(fileEnum, nullptr);
+    gf_return_val_if_fail(fileEnum, nullptr);
 
     if (error && G_IO_ERROR_CANCELLED == error->code) {
         g_error_free(error);
@@ -145,12 +147,15 @@ GAsyncReadyCallback FileEnumeratorPrivate::enumerateAsyncCB(GFile* file, GAsyncR
 
     if (error) {
         fileEnum->mTryAgain = fileEnum->onError(error) && !fileEnum->mTryAgain ? true : false;
+        g_autofree gchar* uri = g_file_get_uri(file);
+        log_error("enumerator error: %s, uri:'%s'", error->message, uri);
         g_error_free(error);
         return nullptr;
     }
 
     if (!enumerator) {
         Q_EMIT fileEnum->q_func()->enumerateFinished(false);
+        log_error("enumerator finiished fail!");
         return nullptr;
     }
 
@@ -161,7 +166,7 @@ GAsyncReadyCallback FileEnumeratorPrivate::enumerateAsyncCB(GFile* file, GAsyncR
 
 GAsyncReadyCallback FileEnumeratorPrivate::enumeratorNextFilesAsyncReadyCB(GFileEnumerator* enumerator, GAsyncResult* res, FileEnumeratorPrivate* fileEnum)
 {
-    g_return_val_if_fail(fileEnum, nullptr);
+    gf_return_val_if_fail(fileEnum, nullptr);
 
     GError* error = nullptr;
     GList* files = g_file_enumerator_next_files_finish(enumerator, res, &error);

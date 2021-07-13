@@ -32,32 +32,41 @@ HEADERS += \
     $$PWD/globals.h                             \
     $$PWD/settings.h                            \
     $$PWD/translator.h                          \
+    $$PWD/application.h                         \
     $$PWD/screensaver.h                         \
     $$PWD/notification.h                        \
     $$PWD/notification_p.h                      \
-    $$PWD/application.h                         \
+    $$PWD/thumbnail-manager.h \
+    regular-file-type.h
 
 
 SOURCES += \
     $$PWD/settings.cpp                          \
     $$PWD/translator.cpp                        \
+    $$PWD/application.cpp                       \
     $$PWD/screensaver.cpp                       \
     $$PWD/notification.cpp                      \
-    $$PWD/application.cpp
+    $$PWD/thumbnail-manager.cpp                 \
 
 
-INSTALL_HEADERS.files = \
-    $$LOG_HEADERS                               \
-    $$INSTALL_UTILS                             \
-    $$ICON_VIEW_HEADER                          \
-    $$FILE_MODEL_HEADERS                        \
-    $$QHOTKEY_PUBLIC_HEADERS                    \
+CORE_HEADERS = \
     $$PWD/globals.h                             \
     $$PWD/settings.h                            \
     $$PWD/translator.h                          \
     $$PWD/application.h                         \
     $$PWD/screensaver.h                         \
     $$PWD/notification.h                        \
+    $$PWD/notification_p.h                      \
+    $$PWD/thumbnail-manager.h                   \
+
+
+INSTALL_HEADERS.files = \
+    $$LOG_HEADERS                               \
+    $$CORE_HEADERS                              \
+    $$INSTALL_UTILS                             \
+    $$ICON_VIEW_HEADER                          \
+    $$FILE_MODEL_HEADERS                        \
+    $$QHOTKEY_PUBLIC_HEADERS                    \
 
 
 INSTALL_PRIVATE_HEADERS.files = \
@@ -66,6 +75,7 @@ INSTALL_PRIVATE_HEADERS.files = \
 
 INSTALL_HEADERS.path = $$INSTALL_HEADER_DIR
 INSTALL_PRIVATE_HEADERS.path = $$INSTALL_HEADER_DIR/private/
+
 
 PC_FILE.path = $$[QT_INSTALL_LIBS]/pkgconfig
 PC_FILE.files = $$PWD/graceful.pc

@@ -8,10 +8,11 @@
 #ifndef LOG_H
 #define LOG_H
 
+#include <time.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdbool.h>
-#include <time.h>
+#include <gio/gio.h>
 
 #define LOG_VERSION "0.1.0"
 
@@ -41,6 +42,48 @@ enum { LOG_TRACE, LOG_DEBUG, LOG_INFO, LOG_WARN, LOG_ERROR, LOG_FATAL };
 #define log_warn(...)   log_log (LOG_WARN,  __FILE__, __LINE__, __VA_ARGS__)
 #define log_error(...)  log_log (LOG_ERROR, __FILE__, __LINE__, __VA_ARGS__)
 #define log_fatal(...)  log_log (LOG_FATAL, __FILE__, __LINE__, __VA_ARGS__)
+
+#define gf_return_if_fail(expr) \
+  G_STMT_START { \
+    if (G_LIKELY (expr)) \
+      { } \
+    else \
+      { \
+        log_warn (G_STRFUNC, #expr);\
+        return; \
+      } \
+  } G_STMT_END
+
+#define gf_return_val_if_fail(expr, val) \
+  G_STMT_START { \
+    if (G_LIKELY (expr)) \
+      { } \
+    else \
+      { \
+        log_warn (G_STRFUNC, #expr);\
+        return (val); \
+      } \
+  } G_STMT_END
+
+#define gf_return_if_reached() \
+  G_STMT_START { \
+        log_warn ("file %s: line %d (%s): should not be reached", \
+         __FILE__, \
+         __LINE__, \
+         G_STRFUNC) \
+    return; \
+  } G_STMT_END
+
+#define gf_return_val_if_reached(val) \
+  G_STMT_START { \
+    log_warn ("file %s: line %d (%s): should not be reached", \
+           __FILE__, \
+           __LINE__, \
+           G_STRFUNC); \
+    return (val); \
+  } G_STMT_END
+
+
 
 const char* log_level_string (int level);
 void log_set_lock (log_LockFn fn, void *udata);

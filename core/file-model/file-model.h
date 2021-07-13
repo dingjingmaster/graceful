@@ -24,7 +24,6 @@ public:
     QString path() const;
 
     QIcon icon() const;
-    QString iconName() const;
 
 private:
     File*                   mFile;                   // use graceful::File

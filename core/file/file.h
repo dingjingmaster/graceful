@@ -7,7 +7,6 @@
 
 namespace graceful
 {
-
 class FilePrivate;
 
 class GRACEFUL_API File : public QObject
@@ -23,13 +22,16 @@ public:
     QString uriDisplay();
 
     QIcon icon();
-    QString iconName();
+    int getMIMEType();
 
     bool isDir();
     bool isRegularFile();
+
+    bool isImage();
     bool isValid();
     bool isVirtual();                       // FIXME://
     const GFile* getGFile();
+    const GFileInfo* getGFileStandardInfo();
 
 Q_SIGNALS:
 

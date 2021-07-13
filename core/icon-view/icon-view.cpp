@@ -300,7 +300,7 @@ QModelIndex IconView::findIndexByUri(const QString &uri) const
 
 QString IconView::getIndexUri(const QModelIndex &index) const
 {
-    return index.data(Qt::UserRole).toString();
+    return index.data(FileModel::FileUriRole).toString();
 }
 
 bool IconView::trySetIndexToPos(const QModelIndex &index, const QPoint &pos)

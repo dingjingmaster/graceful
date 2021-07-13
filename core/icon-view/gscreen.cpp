@@ -1,6 +1,7 @@
 #include <QDebug>
 #include <QScreen>
 
+#include "log/log.h"
 #include "gscreen.h"
 #include "icon-view.h"
 
@@ -14,9 +15,7 @@ namespace graceful
 
 GScreen::GScreen(QScreen *screen, QSize gridSize, QObject *parent) : QObject(parent)
 {
-    if (!screen) {
-        return;
-    }
+    gf_return_if_fail(screen);
 
     mScreen = screen;
     mGeometry = screen->geometry();
