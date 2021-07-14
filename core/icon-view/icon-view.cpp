@@ -694,8 +694,8 @@ void IconView::paintEvent(QPaintEvent *event)
             opt.state &= ~QStyle::State_MouseOver;
         }
 
-        qApp->style()->drawControl(QStyle::CE_ItemViewItem, &opt, &p, this);
-//        itemDelegate()->paint(&p, opt, index);
+        itemDelegate()->paint(&p, opt, index);
+//        qApp->style()->drawControl(QStyle::CE_ItemViewItem, &opt, &p, this);
     }
 }
 

@@ -2,6 +2,7 @@
 
 #include "file/file.h"
 #include "icon-view.h"
+#include "file-model/file-model.h"
 #include "utils/icon-view-editor.h"
 #include "utils/icon-view-text-helper.h"
 
@@ -187,8 +188,8 @@ void IconViewDelegate::paint(QPainter *painter, const QStyleOptionViewItem &opti
     painter->restore();
 
     // paint link icon and locker icon
-    File file(index.data(Qt::UserRole).toString());
-    if ((index.data(Qt::UserRole).toString() != "computer:///") && (index.data(Qt::UserRole).toString() != "trash:///")) {
+    File file(index.data(FileModel::FileUriRole).toString());
+    if ((index.data(FileModel::FileUriRole).toString() != "computer:///") && (index.data(Qt::UserRole).toString() != "trash:///")) {
         QSize lockerIconSize = QSize(16, 16);
         int offset = 8;
         switch (view->zoomLevel()) {
@@ -217,9 +218,17 @@ void IconViewDelegate::paint(QPainter *painter, const QStyleOptionViewItem &opti
         auto topRight = opt.rect.topRight();
         topRight.setX(topRight.x() - opt.rect.width() + 10);
         topRight.setY(topRight.y() + 10);
+        auto linkRect = QRect(topRight, lockerIconSize);
+        if (!file.canRead()) {
+            QIcon symbolicLinkIcon = QIcon::fromTheme("emblem-unreadable");
+            symbolicLinkIcon.paint(painter, linkRect, Qt::AlignCenter);
+        } else if(!file.canWrite() && !file.canExecute()) {
+            QIcon symbolicLinkIcon = QIcon::fromTheme("emblem-readonly");
+            symbolicLinkIcon.paint(painter, linkRect, Qt::AlignCenter);
+        }
     }
 
-    if (index.data(Qt::UserRole + 1).toBool()) {
+    if (index.data(FileModel::FileUriRole + 1).toBool()) {
         QSize symbolicIconSize = QSize(16, 16);
         int offset = 8;
         switch (view->zoomLevel()) {
@@ -305,7 +314,7 @@ QWidget *IconViewDelegate::createEditor(QWidget *parent, const QStyleOptionViewI
         edit->minimalAdjust();
     });
 
-//    getView()->setEditFlag(true);
+    getView()->setEditFlag(true);
     connect(edit, &IconViewEditor::returnPressed, getView(), [=]() {
         this->setModelData(edit, nullptr, index);
         edit->deleteLater();
@@ -320,9 +329,10 @@ QWidget *IconViewDelegate::createEditor(QWidget *parent, const QStyleOptionViewI
 
 void IconViewDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const
 {
-    IconViewEditor *edit = qobject_cast<IconViewEditor*>(editor);
-    if (!edit)
+    IconViewEditor* edit = qobject_cast<IconViewEditor*>(editor);
+    if (!edit) {
         return;
+    }
 
     auto cursor = edit->textCursor();
     cursor.setPosition(0, QTextCursor::MoveAnchor);
@@ -338,17 +348,23 @@ void IconViewDelegate::setEditorData(QWidget *editor, const QModelIndex &index) 
 
 void IconViewDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const
 {
-    IconViewEditor *edit = qobject_cast<IconViewEditor*>(editor);
-    if (!edit)
+    IconViewEditor* edit = qobject_cast<IconViewEditor*>(editor);
+    if (!edit) {
         return;
+    }
+
     auto newName = edit->toPlainText();
     auto oldName = index.data(Qt::DisplayRole).toString();
-    if (newName.isNull())
+    if (newName.isNull()) {
         return;
-    if (newName == "." || newName == ".." || newName.trimmed() == "" || newName.contains("\\"))
+    }
+
+    if (newName == "." || newName == ".." || newName.trimmed() == "" || newName.contains("\\")) {
         newName = "";
-    if (newName.length() >0 && newName != oldName) {
-        // rename
+    }
+
+    if (newName.length() > 0 && newName != oldName) {
+        // FIXME:// rename
     } else if (newName == oldName) {
         getView()->selectionModel()->select(index, QItemSelectionModel::Select);
         getView()->setFocus();
