@@ -76,6 +76,9 @@ public:
 
     void refresh();
 
+public Q_SLOTS:
+    void editUri(const QString&uri);
+
 private:
     GScreen* getScreenByPos (const QPoint& pos);
 

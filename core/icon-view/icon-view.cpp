@@ -1,6 +1,7 @@
 #include "icon-view.h"
 
 #include "gscreen.h"
+#include "file/file.h"
 #include "icon-view-delegate.h"
 #include "file-model/file-model.h"
 
@@ -14,6 +15,10 @@
 #include <QPaintEvent>
 #include <QApplication>
 #include <QStandardPaths>
+#include <QDragEnterEvent>
+#include <QMimeData>
+#include <QDrag>
+#include <QWindow>
 
 
 #define SCREEN_ID                   1000
@@ -244,7 +249,7 @@ QRect IconView::visualRect(const QModelIndex &index) const
     auto rect = QRect(QPoint(0, 0), getIconSize());
 
     if (index.isValid()) {
-        QString uri = index.data(Qt::UserRole).toString();
+        QString uri = index.data(FileModel::FileUriRole).toString();
 
         if (mItemsPosesCached.contains(uri)) {
             rect.translate(mItemsPosesCached[uri]);
@@ -655,6 +660,11 @@ void IconView::refresh()
     saveItemsPositions();
 }
 
+void IconView::editUri(const QString &uri)
+{
+//    File f(uri);
+}
+
 void IconView::setRenaming(bool r)
 {
     mIsRenaming = r;
@@ -702,17 +712,18 @@ void IconView::paintEvent(QPaintEvent *event)
 void IconView::dropEvent(QDropEvent* event)
 {
     mRealDoEdit = false;
-
     mEditTriggerTimer.stop();
-
     if (event->keyboardModifiers() & Qt::ControlModifier) {
         mCtrlKeyPressed = true;
     } else {
         mCtrlKeyPressed = false;
     }
 
+    auto index = indexAt(event->pos());
     auto action = mCtrlKeyPressed ? Qt::CopyAction : Qt::MoveAction;
-    if (this == event->source()) {
+    if (this == event->source() && !mCtrlKeyPressed) {
+//        bool move = false;
+
         QPoint tmp = event->pos();
 
         GScreen* dragScreen = getScreenByPos(mDragStartPos);
@@ -729,10 +740,19 @@ void IconView::dropEvent(QDropEvent* event)
             dropPoint = droGScreen->getGridCenterPoint(dropPoint);
         }
 
-        auto index = indexAt(dropPoint);
         if (index.isValid()) {
+            QString uri = index.data(FileModel::FileUriRole).toString();
+            graceful::File file(uri);
+            if (!file.isDir() || event->mimeData()->urls().contains(uri)) {
+                return;
+            }
+//            for (auto uuri : event->mimeData()->urls()) {
+//                if ("trash:///" == uuri.toDisplayString() || "computer:///" == uuri.toDisplayString()) {
+//                    return;
+//                }
+//            }
+//            mModel->dropMimeData(event->mimeData(), action, -1, -1, indexAt(event->pos()));
         } else {
-            // change icon's position
             QPoint offset = dropPoint - dragPoint;
             auto indexes = selectedIndexes();
             QStringList itemsNeedBeRelayouted;
@@ -770,8 +790,11 @@ void IconView::dropEvent(QDropEvent* event)
         }
     }
 
+    QAbstractItemView::dropEvent(event);
+
     saveItemsPositions();
     viewport()->update();
+    model()->dropMimeData(event->mimeData(), action, -1, -1, index);
     mDragFlag = false;
 }
 
@@ -784,24 +807,98 @@ void IconView::dragMoveEvent(QDragMoveEvent* event)
         mCtrlKeyPressed = false;
     }
 
+    auto action = mCtrlKeyPressed ? Qt::CopyAction : Qt::MoveAction;
+    auto index = indexAt(event->pos());
+    if (index.isValid() && index != mLastIndex) {
+        QHoverEvent he(QHoverEvent::HoverMove, event->posF(), event->posF());
+        viewportEvent(&he);
+    } else {
+        QHoverEvent he(QHoverEvent::HoverLeave, event->posF(), event->posF());
+        viewportEvent(&he);
+    }
+
+//    if (event->isAccepted()) {
+//        return;
+//    }
+
+//    if (this == event->source()) {
+//        event->accept();
+//        return QAbstractItemView::dragMoveEvent(event);
+//    }
 
     QPoint pos = event->pos();
     if (pos.x() <= getGridSize().width() / 2 || pos.y() <= getGridSize().height() / 2) {
         event->ignore();
     } else {
+        event->setDropAction(action);
         event->accept();
     }
 }
 
-void IconView::dragEnterEvent(QDragEnterEvent *e)
+void IconView::dragEnterEvent(QDragEnterEvent* e)
 {
+    mRealDoEdit = false;
 
+    auto action = mCtrlKeyPressed ? Qt::CopyAction : Qt::MoveAction;
+    qDebug()<<"drag enter event" <<action;
+    if (e->mimeData()->hasUrls()) {
+        e->setDropAction(action);
+        e->accept();
+    }
+
+    if (e->source() == this) {
+//        mRealDoEdit = selectedIndexes();
+    }
+
+    QAbstractItemView::dragEnterEvent(e);
 }
 
 void IconView::startDrag(Qt::DropActions supportedActions)
 {
     mDragFlag = true;
     QAbstractItemView::startDrag(supportedActions);
+    return;
+    auto indexes = selectedIndexes();
+    if (indexes.count() > 0) {
+        auto pos = mapFromGlobal(QCursor::pos());
+        qreal scale = 1.0;
+        QWidget *window = this->window();
+        if (window) {
+            QWindow* windowHandle = window->windowHandle();
+            if (windowHandle) {
+                scale = windowHandle->devicePixelRatio();
+            }
+        }
+
+        auto drag = new QDrag(this);
+        drag->setMimeData(model()->mimeData(indexes));
+
+        QRegion rect;
+        QHash<QModelIndex, QRect> indexRectHash;
+        for (auto index : indexes) {
+            rect += (visualRect(index));
+            indexRectHash.insert(index, visualRect(index));
+        }
+
+        QRect realRect = rect.boundingRect();
+        QPixmap pixmap(realRect.size() * scale);
+        pixmap.fill(Qt::transparent);
+        pixmap.setDevicePixelRatio(scale);
+        QPainter painter(&pixmap);
+        for (auto index : indexes) {
+            painter.save();
+            painter.translate(indexRectHash.value(index).topLeft() - rect.boundingRect().topLeft());
+            itemDelegate()->paint(&painter, viewOptions(), index);
+            painter.restore();
+        }
+
+        drag->setPixmap(pixmap);
+        drag->setHotSpot(pos - rect.boundingRect().topLeft() - QPoint(viewportMargins().left(), viewportMargins().top()));
+        drag->setDragCursor(QPixmap(), mCtrlKeyPressed? Qt::CopyAction: Qt::MoveAction);
+        drag->exec(mCtrlKeyPressed ? Qt::CopyAction : Qt::MoveAction);
+    } else {
+        QAbstractItemView::startDrag(supportedActions);
+    }
 }
 
 void IconView::mousePressEvent(QMouseEvent* e)
@@ -814,6 +911,12 @@ void IconView::mousePressEvent(QMouseEvent* e)
     mDragStartPos = e->pos();
     QModelIndex index = indexAt(e->pos());
 
+    if (e->modifiers() & Qt::ControlModifier) {
+        mCtrlKeyPressed = true;
+    } else {
+        mCtrlKeyPressed = false;
+    }
+
     if (e->button() & Qt::LeftButton) {
         if (!index.isValid()) {
             mSelectFlag = true;
@@ -823,12 +926,6 @@ void IconView::mousePressEvent(QMouseEvent* e)
             mLastIndex = index;
             setSelection(index, QItemSelectionModel::ClearAndSelect);
         }
-    }
-
-    if (e->modifiers() & Qt::ControlModifier) {
-        mCtrlKeyPressed = true;
-    } else {
-        mCtrlKeyPressed = false;
     }
 
     if (!mCtrlOrShiftPressed) {
@@ -844,10 +941,10 @@ void IconView::mousePressEvent(QMouseEvent* e)
         return;
     }
 
-//    QAbstractItemView::mousePressEvent(e);
+    QAbstractItemView::mousePressEvent(e);
 }
 
-void IconView::mouseMoveEvent(QMouseEvent *event)
+void IconView::mouseMoveEvent(QMouseEvent* event)
 {
     QModelIndex index = indexAt(event->pos());
     mHoverIndex = (!mSelectFlag && index.isValid()) ? index : QModelIndex();
@@ -877,6 +974,7 @@ void IconView::mouseReleaseEvent(QMouseEvent *event)
 
 void IconView::mouseDoubleClickEvent(QMouseEvent* event)
 {
+    mRealDoEdit = false;
     if (Qt::LeftButton == event->button()) {
         QModelIndex index = indexAt(event->pos());
         if (index.isValid()) {
