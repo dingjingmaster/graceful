@@ -24,14 +24,28 @@ public:
 
     void queryFileType();
 
+    void queryAccessInfo();
+
 public:
     GFile*                              mFile = nullptr;
     GFileInfo*                          mFileStandardInfo = nullptr;
 
     QString                             mUri = nullptr;
+    QString                             mSchema = nullptr;
 
     GFileType                           mFileType = G_FILE_TYPE_UNKNOWN;
     MIMEType                            mFileMimeType = FILE_TYPE_UNKNOW;
+
+    bool                                mQueryAccess = false;
+    bool                                mCanRead = true;
+    bool                                mCanWrite = true;
+    bool                                mCanExecute = true;
+    bool                                mCanDelete = true;
+    bool                                mCanTrash = true;
+    bool                                mCanRename = true;
+
+    QString                             mContentType = nullptr;
+
 
     File*                               q_ptr = nullptr;
 };
@@ -46,9 +60,14 @@ FilePrivate::FilePrivate(File* f, QString uri) : QObjectPrivate(), q_ptr(f)
 
     log_debug("new file by uri:%s", mUri.toUtf8().constData());
 
-    if (!mUri.isNull()) {
+    if (!mUri.isNull() && !mUri.isEmpty()) {
         mFile = g_file_new_for_uri(Utils::urlEncode(mUri).toUtf8().constData());
         mFileStandardInfo = g_file_query_info(mFile, "standard::*", G_FILE_QUERY_INFO_NOFOLLOW_SYMLINKS, nullptr, nullptr);
+
+        QStringList ls = mUri.split("://");
+        if (2 == ls.size()) {
+            mSchema = ls.first();
+        }
     }
 }
 
@@ -64,6 +83,45 @@ void FilePrivate::queryFileType()
         mFileType = g_file_query_file_type(mFile, G_FILE_QUERY_INFO_NOFOLLOW_SYMLINKS, nullptr);
     }
 }
+
+void FilePrivate::queryAccessInfo()
+{
+    gf_return_if_fail(G_IS_FILE(mFile));
+
+    GError* error = nullptr;
+    g_autoptr(GFileInfo) fileInfo = g_file_query_info(mFile, "access::*", G_FILE_QUERY_INFO_NOFOLLOW_SYMLINKS, nullptr, &error);
+    if (error) {
+        log_error("query file info access:: error: %d -- %s", error->code, error->message);
+        g_error_free(error);
+        return;
+    }
+
+    if (g_file_info_has_attribute(fileInfo, G_FILE_ATTRIBUTE_ACCESS_CAN_READ)) {
+        mCanRead = g_file_info_get_attribute_boolean(fileInfo, G_FILE_ATTRIBUTE_ACCESS_CAN_READ);
+    }
+
+    if (g_file_info_has_attribute(fileInfo, G_FILE_ATTRIBUTE_ACCESS_CAN_WRITE)) {
+        mCanWrite = g_file_info_get_attribute_boolean(fileInfo, G_FILE_ATTRIBUTE_ACCESS_CAN_WRITE);
+    }
+
+    if (g_file_info_has_attribute(fileInfo, G_FILE_ATTRIBUTE_ACCESS_CAN_EXECUTE)) {
+        mCanExecute = g_file_info_get_attribute_boolean(fileInfo, G_FILE_ATTRIBUTE_ACCESS_CAN_EXECUTE);
+    }
+
+    if (g_file_info_has_attribute(fileInfo, G_FILE_ATTRIBUTE_ACCESS_CAN_DELETE)) {
+        mCanDelete = g_file_info_get_attribute_boolean(fileInfo, G_FILE_ATTRIBUTE_ACCESS_CAN_DELETE);
+    }
+
+    if (g_file_info_has_attribute(fileInfo, G_FILE_ATTRIBUTE_ACCESS_CAN_TRASH)) {
+        mCanTrash = g_file_info_get_attribute_boolean(fileInfo, G_FILE_ATTRIBUTE_ACCESS_CAN_TRASH);
+    }
+
+    if (g_file_info_has_attribute(fileInfo, G_FILE_ATTRIBUTE_ACCESS_CAN_RENAME)) {
+        mCanRename = g_file_info_get_attribute_boolean(fileInfo, G_FILE_ATTRIBUTE_ACCESS_CAN_RENAME);
+    }
+    mQueryAccess = true;
+}
+
 }
 
 
@@ -95,6 +153,16 @@ QString graceful::File::path()
     return path;
 }
 
+QString graceful::File::schema()
+{
+    Q_D(File);
+    if (!d->mSchema.isNull() && !d->mSchema.isEmpty()) {
+        return d->mSchema;
+    }
+
+    return "";
+}
+
 QString graceful::File::fileName()
 {
     Q_D(File);
@@ -107,6 +175,23 @@ QString graceful::File::fileName()
 QString graceful::File::uriDisplay()
 {
     return Utils::urlDecode(uri());
+}
+
+QString graceful::File::getContentType()
+{
+    Q_D(File);
+
+    if (!d->mContentType.isNull() && !d->mContentType.isEmpty()) {
+        return d->mContentType;
+    }
+
+    gf_return_val_if_fail(G_IS_FILE_INFO(d->mFileStandardInfo), nullptr);
+
+    d->mContentType = g_file_info_get_content_type(d->mFileStandardInfo);
+
+    gf_return_val_if_fail(!d->mContentType.isNull() && !d->mContentType.isEmpty(), "");
+
+    return d->mContentType;
 }
 
 QIcon graceful::File::icon()
@@ -177,6 +262,72 @@ bool graceful::File::isVirtual()
     // fixme://
 
     return false;
+}
+
+bool graceful::File::canRead()
+{
+    Q_D(File);
+
+    if (!d->mQueryAccess) {
+        d->queryAccessInfo();
+    }
+
+    return d->mCanRead;
+}
+
+bool graceful::File::canWrite()
+{
+    Q_D(File);
+
+    if (!d->mQueryAccess) {
+        d->queryAccessInfo();
+    }
+
+    return d->mCanWrite;
+}
+
+bool graceful::File::canExecute()
+{
+    Q_D(File);
+
+    if (!d->mQueryAccess) {
+        d->queryAccessInfo();
+    }
+
+    return d->mCanExecute;
+}
+
+bool graceful::File::canDelete()
+{
+    Q_D(File);
+
+    if (!d->mQueryAccess) {
+        d->queryAccessInfo();
+    }
+
+    return d->mCanDelete;
+}
+
+bool graceful::File::canTrash()
+{
+    Q_D(File);
+
+    if (!d->mQueryAccess) {
+        d->queryAccessInfo();
+    }
+
+    return d->mCanTrash;
+}
+
+bool graceful::File::canRename()
+{
+    Q_D(File);
+
+    if (!d->mQueryAccess) {
+        d->queryAccessInfo();
+    }
+
+    return d->mCanRename;
 }
 
 const GFile* graceful::File::getGFile()

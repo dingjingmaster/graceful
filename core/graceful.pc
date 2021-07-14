@@ -1,7 +1,7 @@
 Name: libgraceful
 Description: GracefulLinux's library
 Home Page: https://github.com/graceful-linux
-Requires: Qt5Widgets >= 5.6.0 glib-2.0 gio-2.0
+Requires: Qt5Widgets >= 5.6.0 glib-2.0 gio-2.0 gio-unix-2.0
 Version: 1.0.0
 Libs: -L/usr/lib -lgraceful
 Cflags: -I/usr/include/graceful -I/usr/include/graceful/private/

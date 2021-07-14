@@ -18,8 +18,10 @@ public:
 
     QString uri();
     QString path();
+    QString schema();
     QString fileName();
     QString uriDisplay();
+    QString getContentType();
 
     QIcon icon();
     int getMIMEType();
@@ -30,6 +32,16 @@ public:
     bool isImage();
     bool isValid();
     bool isVirtual();                       // FIXME://
+
+    bool canRead();
+    bool canWrite();
+    bool canExecute();
+    bool canDelete();
+    bool canTrash();
+    bool canRename();
+
+
+
     const GFile* getGFile();
     const GFileInfo* getGFileStandardInfo();
 
