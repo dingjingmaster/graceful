@@ -73,7 +73,8 @@ IconView::IconView(QWidget *parent) : QAbstractItemView(parent)
     mRubberBand = new QRubberBand(QRubberBand::Rectangle, this);
 
     connect(qApp, &QGuiApplication::screenAdded, this, [=] (QScreen* screen) {
-        addScreen(new GScreen(screen, getGridSize(), this));
+        GScreen* s = new GScreen(screen, getGridSize(), this);
+        addScreen(s);
         for (auto sc : mScreens) {
             if (qApp->primaryScreen() == sc->getScreen()) {
                 mPrimaryScreen = sc;
@@ -99,7 +100,7 @@ IconView::IconView(QWidget *parent) : QAbstractItemView(parent)
             mItemsPosesCached.remove(u.first);
         }
 
-        if (s) mScreens.removeOne(s);
+        if (s) {mScreens.removeOne(s);}
         s->deleteLater();
 
         if (mScreens.size() == 0) {
@@ -133,17 +134,6 @@ IconView::IconView(QWidget *parent) : QAbstractItemView(parent)
 
         swaGScreen(mPrimaryScreen, oldPrimaryScreen);
     });
-
-//    connect(m_model, &DesktopFileModel::fileDeleted, this, [=] (const QString& uri) {
-//        qDebug() << "DJ- delete uri: " << uri << " from view";
-//        mItems.removeOne(uri);
-//        mFloatItems.removeOne(uri);
-//        mItemsPosesCached.remove(uri);
-//        for (auto s : mScreens) {
-//            s->makeItemGridPosInvalid(uri);
-//            s->makeItemMetaPosInvalid(uri);
-//        }
-//    });
 
     connect(this, &IconView::screenResolutionChanged, this, [=] (GScreen* s) {
         if (!s || !s->isValidScreen()) {
