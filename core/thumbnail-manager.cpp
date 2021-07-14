@@ -79,7 +79,7 @@ QImage ThumbnailManagerPrivate::getStandardThumbnail(File &file) const
     }
 
     GFileInfo* fileInfo = const_cast<GFileInfo*>(file.getGFileStandardInfo());
-    g_return_val_if_fail(fileInfo, QImage());
+    gf_return_val_if_fail(fileInfo, QImage());
 
     GIcon* icons = g_file_info_get_symbolic_icon(fileInfo);
     g_autofree gchar* iconNames = g_icon_to_string(icons);
