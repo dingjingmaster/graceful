@@ -22,6 +22,7 @@ include($$PWD/common/common.pri)
 include($$PWD/QHotkey/qhotkey.pri)
 include($$PWD/icon-view/icon-view.pri)
 include($$PWD/file-model/file-model.pri)
+include($$PWD/qgsettings/qgsettings.pri)
 include($$PWD/SingleApplication/singleapplication.pri)
 
 
@@ -36,8 +37,8 @@ HEADERS += \
     $$PWD/screensaver.h                         \
     $$PWD/notification.h                        \
     $$PWD/notification_p.h                      \
-    $$PWD/thumbnail-manager.h \
-    regular-file-type.h
+    $$PWD/thumbnail-manager.h                   \
+    $$PWD/regular-file-type.h                   \
 
 
 SOURCES += \
@@ -65,6 +66,8 @@ INSTALL_HEADERS.files = \
     $$CORE_HEADERS                              \
     $$INSTALL_UTILS                             \
     $$ICON_VIEW_HEADER                          \
+    $$FILE_FILE_HEADERS                         \
+    $$QSETTINGS_HEADERS                         \
     $$FILE_MODEL_HEADERS                        \
     $$QHOTKEY_PUBLIC_HEADERS                    \
 
