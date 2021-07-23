@@ -4,10 +4,13 @@
 #include "log/log.h"
 #include <gio/gio.h>
 
+#include "global-settings.h"
+
 #include <QMap>
 #include <QIcon>
 #include <QImage>
 #include <QDebug>
+#include <QMutex>
 
 static QIcon imageToIcon (const QImage& image, const QSize& size);
 
@@ -24,24 +27,21 @@ public:
     QImage getPictureThumbnail(File& file);
     QImage getStandardThumbnail(File& file) const;
 
-
 public:
     int                                     mMaxSize = 1000;
     QIcon                                   mInvalidIcon;
+    QMutex                                  mLock;
     QMap<QString, QImage>*                  mUriImage = nullptr;                    // The icon corresponding to the file // maybe use shared ptr
-    QMap<MIMEType, QImage>*                 mTypeImage = nullptr;                   // The icon corresponding to the file type
 };
 
 ThumbnailManagerPrivate::ThumbnailManagerPrivate()
 {
     mUriImage = new QMap<QString, QImage>();
-    mTypeImage = new QMap<MIMEType, QImage>();
 }
 
 ThumbnailManagerPrivate::~ThumbnailManagerPrivate()
 {
     if (mUriImage)                          delete mUriImage;
-    if (mTypeImage)                         delete mTypeImage;
 }
 
 QImage ThumbnailManagerPrivate::getPictureThumbnail(File &file)
@@ -74,10 +74,6 @@ QImage ThumbnailManagerPrivate::getStandardThumbnail(File &file) const
 {
     QString uri = file.uri();
 
-    if (mUriImage->contains(uri)) {
-        return mUriImage->value(uri);
-    }
-
     GFileInfo* fileInfo = const_cast<GFileInfo*>(file.getGFileStandardInfo());
     gf_return_val_if_fail(fileInfo, QImage());
 
@@ -88,14 +84,16 @@ QImage ThumbnailManagerPrivate::getStandardThumbnail(File &file) const
 
     QString ticonNames = iconNames;
     QStringList qiconNames = ticonNames.split(" ");
-    for (auto n : qiconNames) {
-        QIcon icon = QIcon::fromTheme(n);
+    QIcon bicon;
+    for (auto n = qiconNames.constBegin(); n != qiconNames.constEnd(); ++n) {
+        QIcon icon = QIcon::fromTheme(*n);
         if (!icon.isNull()) {
-            mTypeImage->insert(static_cast<MIMEType>(file.getMIMEType()), icon.pixmap(QSize(128, 128)).toImage());
+            log_debug("file '%s' get icon '%s'", file.uriDisplay().toUtf8().constData(), (*n).toUtf8().constData());
+            bicon = icon;
         }
     }
 
-    return mTypeImage->value(static_cast<MIMEType>(file.getMIMEType()), QImage());
+    return bicon.isNull() ? QImage() : bicon.pixmap(QSize(128, 128)).toImage();
 }
 }
 

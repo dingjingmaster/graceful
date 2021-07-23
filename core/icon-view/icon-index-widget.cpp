@@ -13,6 +13,8 @@
 #include <QTextOption>
 #include <QApplication>
 
+#include "global-settings.h"
+
 #include <QDebug>
 
 extern void qt_blurImage(QImage &blurImage, qreal radius, bool quality, int transposed);

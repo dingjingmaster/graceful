@@ -54,19 +54,19 @@ public:
 };
 
 
-class graceful::GlobalSettingsPrivate
-{
-public:
-    GlobalSettingsPrivate(GlobalSettings *parent) : mParent(parent), mThemeUpdated(0ull)
-    {
+//class graceful::GlobalSettingsPrivate
+//{
+//public:
+//    GlobalSettingsPrivate(GlobalSettings *parent) : mParent(parent), mThemeUpdated(0ull)
+//    {
 
-    }
+//    }
 
-    GlobalSettings* mParent;
-    QString         mIconTheme;
-    QString         mGracefulTheme;
-    qlonglong       mThemeUpdated;
-};
+//    GlobalSettings* mParent;
+//    QString         mIconTheme;
+//    QString         mGracefulTheme;
+//    qlonglong       mThemeUpdated;
+//};
 
 
 Settings::Settings(const QString& module, QObject* parent) : QSettings("graceful", module, parent), d_ptr(new SettingsPrivate(this))
@@ -172,8 +172,8 @@ const GlobalSettings *Settings::globalSettings()
     if (!instance) {
         mutex.lock();
 
-        if (!instance)
-            instance = new GlobalSettings();
+//        if (!instance)
+//            instance = new GlobalSettings();
 
         mutex.unlock();
     }
@@ -408,10 +408,10 @@ QString GracefulTheme::desktopBackground(int screen) const
 const GracefulTheme &GracefulTheme::currentTheme()
 {
     static GracefulTheme theme;
-    QString name = Settings::globalSettings()->value("theme").toString();
-    if (theme.name() != name) {
-        theme = GracefulTheme(name);
-    }
+//    QString name = Settings::globalSettings()->value("theme").toString();
+//    if (theme.name() != name) {
+//        theme = GracefulTheme(name);
+//    }
     return theme;
 }
 
@@ -476,49 +476,49 @@ void SettingsCache::loadToSettings()
 }
 
 
-GlobalSettings::GlobalSettings() : Settings("graceful"), d_ptr(new GlobalSettingsPrivate(this))
-{
-    if (value("icon_theme").toString().isEmpty()) {
-        qWarning() << QString::fromLatin1("Icon Theme not set. Fallbacking to Oxygen, if installed");
-        const QString fallback(QLatin1String("oxygen"));
-        const QDir dir(QLatin1String(GRACEFUL_DATA_DIR) + QLatin1String("/icons"));
-        if (dir.exists(fallback))
-        {
-            setValue("icon_theme", fallback);
-            sync();
-        } else {
-            qWarning() << QString::fromLatin1("Fallback Icon Theme (Oxygen) not found");
-        }
-    }
+//GlobalSettings::GlobalSettings() : Settings("graceful"), d_ptr(new GlobalSettingsPrivate(this))
+//{
+//    if (value("icon_theme").toString().isEmpty()) {
+//        qWarning() << QString::fromLatin1("Icon Theme not set. Fallbacking to Oxygen, if installed");
+//        const QString fallback(QLatin1String("oxygen"));
+//        const QDir dir(QLatin1String(GRACEFUL_DATA_DIR) + QLatin1String("/icons"));
+//        if (dir.exists(fallback))
+//        {
+//            setValue("icon_theme", fallback);
+//            sync();
+//        } else {
+//            qWarning() << QString::fromLatin1("Fallback Icon Theme (Oxygen) not found");
+//        }
+//    }
 
-    fileChanged();
-}
+//    fileChanged();
+//}
 
-GlobalSettings::~GlobalSettings()
-{
-    delete d_ptr;
-}
-
-
-void GlobalSettings::fileChanged()
-{
-    Q_D(GlobalSettings);
-    sync();
+//GlobalSettings::~GlobalSettings()
+//{
+//    delete d_ptr;
+//}
 
 
-    QString it = value("icon_theme").toString();
-    if (d->mIconTheme != it) {
-        Q_EMIT iconThemeChanged();
-    }
+//void GlobalSettings::fileChanged()
+//{
+//    Q_D(GlobalSettings);
+//    sync();
 
-    QString rt = value("theme").toString();
-    qlonglong themeUpdated = value("__theme_updated__").toLongLong();
-    if ((d->mGracefulTheme != rt) || (d->mThemeUpdated != themeUpdated)) {
-        d->mGracefulTheme = rt;
-        Q_EMIT gracefulThemeChanged();
-    }
 
-    Q_EMIT settingsChangedFromExternal();
-    Q_EMIT settingsChanged();
-}
+//    QString it = value("icon_theme").toString();
+//    if (d->mIconTheme != it) {
+//        Q_EMIT iconThemeChanged();
+//    }
+
+//    QString rt = value("theme").toString();
+//    qlonglong themeUpdated = value("__theme_updated__").toLongLong();
+//    if ((d->mGracefulTheme != rt) || (d->mThemeUpdated != themeUpdated)) {
+//        d->mGracefulTheme = rt;
+//        Q_EMIT gracefulThemeChanged();
+//    }
+
+//    Q_EMIT settingsChangedFromExternal();
+//    Q_EMIT settingsChanged();
+//}
 

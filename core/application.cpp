@@ -26,8 +26,8 @@ using namespace graceful;
 
 Application::Application(int &argc, char** argv) : QApplication(argc, argv)
 {
-    setWindowIcon(QIcon(QFile::decodeName(GRACEFUL_GRAPHICS_DIR) + QL1S("/xxx.png")));
-    connect(Settings::globalSettings(), &GlobalSettings::gracefulThemeChanged, this, &Application::updateTheme);
+//    setWindowIcon(QIcon(QFile::decodeName(GRACEFUL_GRAPHICS_DIR) + QL1S("/xxx.png")));
+//    connect(Settings::globalSettings(), &GlobalSettings::gracefulThemeChanged, this, &Application::updateTheme);
     updateTheme();
 }
 

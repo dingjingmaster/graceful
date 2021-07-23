@@ -39,6 +39,7 @@ HEADERS += \
     $$PWD/notification_p.h                      \
     $$PWD/thumbnail-manager.h                   \
     $$PWD/regular-file-type.h                   \
+    $$PWD/global-settings.h
 
 
 SOURCES += \
@@ -48,6 +49,7 @@ SOURCES += \
     $$PWD/screensaver.cpp                       \
     $$PWD/notification.cpp                      \
     $$PWD/thumbnail-manager.cpp                 \
+    $$PWD/global-settings.cpp
 
 
 CORE_HEADERS = \
@@ -58,6 +60,7 @@ CORE_HEADERS = \
     $$PWD/screensaver.h                         \
     $$PWD/notification.h                        \
     $$PWD/notification_p.h                      \
+    $$PWD/global-settings.h                     \
     $$PWD/thumbnail-manager.h                   \
 
 

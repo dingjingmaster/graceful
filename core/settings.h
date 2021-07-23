@@ -105,25 +105,25 @@ private:
 
 class GlobalSettingsPrivate;
 
-class GRACEFUL_API GlobalSettings : public Settings
-{
-    Q_OBJECT
-public:
-    GlobalSettings();
-    ~GlobalSettings() override;
+//class GRACEFUL_API GlobalSettings : public Settings
+//{
+//    Q_OBJECT
+//public:
+//    GlobalSettings();
+//    ~GlobalSettings() override;
 
-Q_SIGNALS:
-    void iconThemeChanged();
+//Q_SIGNALS:
+//    void iconThemeChanged();
 
-    void gracefulThemeChanged();
+//    void gracefulThemeChanged();
 
-protected Q_SLOTS:
-    void fileChanged() override;
+//protected Q_SLOTS:
+//    void fileChanged() override;
 
-private:
-    GlobalSettingsPrivate* const d_ptr;
-    Q_DECLARE_PRIVATE(GlobalSettings)
-};
+//private:
+//    GlobalSettingsPrivate* const d_ptr;
+//    Q_DECLARE_PRIVATE(GlobalSettings)
+//};
 
 }
 

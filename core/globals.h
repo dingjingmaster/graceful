@@ -13,4 +13,7 @@
 #define GRACEFUL_RELATIVE_SHARE_TRANSLATIONS_DIR    "graceful/translations"
 #define GRACEFUL_SHARE_TRANSLATIONS_DIR             "/usr/share/graceful/translations"
 #define GRACEFUL_GRAPHICS_DIR                       "/usr/share/lxqt/graphics"
+
+#define GRACEFUL_SETTINGS_DAEMON                    "org.graceful.settings.daemon"
+#define GRACEFUL_SETTINGS_ICON_THEME                "icon-theme"
 #endif // GLOBALS_H
