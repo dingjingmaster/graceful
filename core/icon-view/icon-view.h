@@ -51,14 +51,9 @@ public:
 
     void scrollTo(const QModelIndex& index, ScrollHint hint) override {}
 
-    void _saveItemsPoses();
-
     void zoomIn();
     void zoomOut();
     ZoomLevel zoomLevel() const;
-
-    void initMenu();
-    void initShoutCut();
 
     void setRenaming (bool);
     void setEditFlag (bool);

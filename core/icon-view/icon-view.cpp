@@ -57,7 +57,6 @@ IconView::IconView(QWidget *parent) : QAbstractItemView(parent)
 
     setIconSize(QSize(64, 64));
 
-    initShoutCut();
     setDefaultZoomLevel(zoomLevel());
 
     installEventFilter(this);
@@ -335,11 +334,6 @@ bool IconView::isItemOverlapped(const QString &uri)
     return false;
 }
 
-void IconView::_saveItemsPoses()
-{
-    this->saveItemsPositions();
-}
-
 void IconView::zoomIn()
 {
     switch (zoomLevel()) {
@@ -372,112 +366,6 @@ void IconView::zoomOut()
     default:
         break;
     }
-}
-
-void IconView::initMenu()
-{
-
-}
-
-void IconView::initShoutCut()
-{
-    QAction *copyAction = new QAction(this);
-    copyAction->setShortcut(QKeySequence::Copy);
-    addAction(copyAction);
-
-    QAction *cutAction = new QAction(this);
-    cutAction->setShortcut(QKeySequence::Cut);
-    addAction(cutAction);
-
-    QAction *pasteAction = new QAction(this);
-    pasteAction->setShortcut(QKeySequence::Paste);
-    addAction(pasteAction);
-
-    //add CTRL+D for delete operation
-    auto trashAction = new QAction(this);
-    trashAction->setShortcuts(QList<QKeySequence>()<<Qt::Key_Delete<<QKeySequence(Qt::CTRL + Qt::Key_D));
-    addAction(trashAction);
-
-    QAction *undoAction = new QAction(this);
-    undoAction->setShortcut(QKeySequence::Undo);
-    addAction(undoAction);
-
-    QAction *redoAction = new QAction(this);
-    redoAction->setShortcut(QKeySequence::Redo);
-    addAction(redoAction);
-
-    QAction *zoomInAction = new QAction(this);
-    zoomInAction->setShortcut(QKeySequence::ZoomIn);
-    connect(zoomInAction, &QAction::triggered, [=]() {
-        this->zoomIn();
-    });
-    addAction(zoomInAction);
-
-    QAction *zoomOutAction = new QAction(this);
-    zoomOutAction->setShortcut(QKeySequence::ZoomOut);
-    connect(zoomOutAction, &QAction::triggered, [=]() {
-        this->zoomOut();
-    });
-    addAction(zoomOutAction);
-
-    QAction *renameAction = new QAction(this);
-    renameAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_E));
-    addAction(renameAction);
-
-    QAction *removeAction = new QAction(this);
-    removeAction->setShortcut(QKeySequence(Qt::SHIFT + Qt::Key_Delete));
-    addAction(removeAction);
-
-    auto propertiesWindowAction = new QAction(this);
-    propertiesWindowAction->setShortcuts(QList<QKeySequence>() << QKeySequence(Qt::ALT + Qt::Key_Return) << QKeySequence(Qt::ALT + Qt::Key_Enter));
-    addAction(propertiesWindowAction);
-
-    auto newFolderAction = new QAction(this);
-    newFolderAction->setShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_N));
-    addAction(newFolderAction);
-
-    QAction *refreshWinAction = new QAction(this);
-    refreshWinAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_R));
-    connect(refreshWinAction, &QAction::triggered, [=]() {
-        this->refresh();
-    });
-    addAction(refreshWinAction);
-
-    QAction *reverseSelectAction = new QAction(this);
-    reverseSelectAction->setShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_L));
-    addAction(reverseSelectAction);
-
-    QAction *normalIconAction = new QAction(this);
-    normalIconAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_0));
-    connect(normalIconAction, &QAction::triggered, [=]() {
-        if (this->zoomLevel() == IconView::Normal)
-            return;
-        this->setDefaultZoomLevel(IconView::Normal);
-    });
-    addAction(normalIconAction);
-
-    auto refreshAction = new QAction(this);
-    refreshAction->setShortcut(Qt::Key_F5);
-    connect(refreshAction, &QAction::triggered, this, [=]() {
-        this->refresh();
-    });
-    addAction(refreshAction);
-
-    QAction *editAction = new QAction(this);
-    editAction->setShortcuts(QList<QKeySequence>() << QKeySequence(Qt::ALT + Qt::Key_E) << Qt::Key_F2);
-    addAction(editAction);
-
-    //show hidden action
-    QAction *showHiddenAction = new QAction(this);
-    showHiddenAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_H));
-    addAction(showHiddenAction);
-    connect(showHiddenAction, &QAction::triggered, this, [=]() {
-        setShowHidden();
-    });
-
-    auto cancelAction = new QAction(this);
-    cancelAction->setShortcut(Qt::Key_Escape);
-    addAction(cancelAction);
 }
 
 QPoint IconView::getMarginLeftTop() const
