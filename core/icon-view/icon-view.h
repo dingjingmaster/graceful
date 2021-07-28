@@ -39,6 +39,7 @@ public:
     void removeScreen(GScreen* screen);
     void swaGScreen(GScreen* screen1, GScreen* screen2);
 
+    QStringList getSelections();
     QString getIndexUri(const QModelIndex &index) const;
     QModelIndex findIndexByUri(const QString &uri) const;
     QModelIndex indexAt(const QPoint &point) const override;

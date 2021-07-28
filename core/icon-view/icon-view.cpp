@@ -209,6 +209,21 @@ void IconView::swaGScreen(GScreen *screen1, GScreen *screen2)
     this->handleScreenChanged(screen2);
 }
 
+QStringList IconView::getSelections()
+{
+    QStringList uris;
+
+    auto indexes = selectionModel()->selection().indexes();
+
+    for (auto index : indexes) {
+        uris << index.data(Qt::UserRole).toString();
+    }
+
+    uris.removeDuplicates();
+
+    return uris;
+}
+
 void IconView::removeScreen(GScreen *screen)
 {
     if (!screen) {
