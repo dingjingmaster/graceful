@@ -16,6 +16,7 @@ INSTALL_HEADER_DIR = /usr/include/graceful/
 include($$PWD/log/log.pri)
 include($$PWD/file/file.pri)
 include($$PWD/dbus/dbus.pri)
+include($$PWD/audio/audio.pri)
 include($$PWD/utils/utils.pri)
 include($$PWD/power/power.pri)
 include($$PWD/common/common.pri)
