@@ -77,7 +77,7 @@ typedef void (*log_LockFn) (bool lock, void *udata);
 #ifdef LOG_TRACE
 #undef LOG_TRACE
 #endif 
-#define	LOG_TRACE 7
+#define	LOG_TRACE 8
 
 
 
