@@ -74,6 +74,12 @@ typedef void (*log_LockFn) (bool lock, void *udata);
 #endif
 #define	LOG_DEBUG	7
 
+#ifdef LOG_TRACE
+#undef LOG_TRACE
+#endif 
+#define	LOG_TRACE 7
+
+
 
 #define log_trace(...)  log_log (LOG_TRACE,     __FILE__, __LINE__, __VA_ARGS__)
 #define log_debug(...)  log_log (LOG_DEBUG,     __FILE__, __LINE__, __VA_ARGS__)
